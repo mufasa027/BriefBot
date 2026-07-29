@@ -9,16 +9,36 @@ class NewsArticle(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
+    source = Column(String, nullable=False)
+
     title = Column(String, nullable=False)
-
-    source = Column(String)
-
-    url = Column(String, unique=True)
-
-    published = Column(String)
 
     summary = Column(Text)
 
-    category = Column(String)
+    url = Column(String, unique=True, nullable=False)
+
+    published = Column(String)
+
+    category = Column(String, default="World")
+
+    keywords = Column(Text)
+
+    importance = Column(Integer, default=5)
+
+    confidence = Column(Integer, default=50)
+
+    sentiment = Column(String, default="Neutral")
+
+    region = Column(String, default="Global")
+
+    people = Column(Text)
+
+    organizations = Column(Text)
+
+    countries = Column(Text)
+
+    topics = Column(Text)
+
+    image_url = Column(Text)
 
     status = Column(String, default="new")

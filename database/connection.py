@@ -7,11 +7,20 @@ DATABASE_URL = f"sqlite:///{DATABASE_NAME}"
 
 engine = create_engine(
     DATABASE_URL,
-    echo=False
+    echo=False,
+    future=True,
 )
 
 SessionLocal = sessionmaker(
-    autocommit=False,
+    bind=engine,
     autoflush=False,
-    bind=engine
+    autocommit=False,
 )
+
+
+def get_session():
+    return SessionLocal()
+
+
+def get_connection():
+    return engine.raw_connection()

@@ -16,7 +16,7 @@ def fetch_bbc_news():
     for entry in feed.entries:
         articles.append({
             "title": entry.title,
-            "link": entry.link,
+            "url": entry.link,
             "published": entry.published if hasattr(entry, "published") else "",
             "summary": entry.summary if hasattr(entry, "summary") else "",
             "source": "BBC"
