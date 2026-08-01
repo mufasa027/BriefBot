@@ -1,5 +1,5 @@
 import time
-
+from ai.ranker import calculate_score
 from database.migrations import create_database
 from collectors.manager import fetch_all_news
 from database.crud import save_articles
@@ -27,12 +27,12 @@ def main():
 
     for i, article in enumerate(articles, start=1):
 
-        print(
-            f"[{i}/{len(articles)}] {article['source']} | {article['title']}"
-        )
+        print(f"[{i}/{len(articles)}] {article['source']} | {article['title']}")
 
         try:
             summarize_article(article)
+
+            article["final_score"] = calculate_score(article)
 
             successful += 1
 
@@ -45,10 +45,14 @@ def main():
         except Exception as e:
 
             failed += 1
-
             print(f"   ✗ {e}")
 
     print("\nSaving articles...")
+
+    articles.sort(
+        key=lambda x: x.get("final_score", 0),
+        reverse=True,
+    )
 
     saved = save_articles(articles)
 

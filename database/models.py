@@ -42,3 +42,12 @@ class NewsArticle(Base):
     image_url = Column(Text)
 
     status = Column(String, default="new")
+
+    posted = Column(Integer, default=0)
+
+    posted_time = Column(String)
+
+    instagram_post_id = Column(String)
+
+    final_score = Column(Integer, default=0)
+

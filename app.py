@@ -39,11 +39,6 @@ def load_data():
     return df
 
 df = load_data()
-st.write("Rows:", len(df))
-st.write("Columns:", list(df.columns))
-st.dataframe(df.head())
-st.write(df["source"].unique())
-st.write(df["importance"].head(10))
 
 # -----------------------
 # SIDEBAR
@@ -92,7 +87,6 @@ sort = st.sidebar.selectbox(
 # FILTERS
 # -----------------------
 
-st.write("Initial:", len(df))
 
 if search:
     df = df[
@@ -100,17 +94,13 @@ if search:
         |
         df.summary.str.contains(search, case=False, na=False)
     ]
-st.write("After search:", len(df))
 
 if category != "All":
     df = df[df.category == category]
-st.write("After category:", len(df))
 
 df = df[df.source.isin(source)]
-st.write("After source:", len(df))
 
 df = df[df.importance >= importance]
-st.write("After importance:", len(df))
 # -----------------------
 # METRICS
 # -----------------------
@@ -138,7 +128,6 @@ st.download_button(
     "text/csv",
 )
 
-st.write(f"### {len(df)} Articles")
 
 # -----------------------
 # PAGINATION
@@ -183,7 +172,6 @@ for _, row in df.iterrows():
             f"🌍 {row.source} • 📅 {row.published}"
         )
 
-        st.write(row.summary)
 
         st.success(row.keywords)
 
