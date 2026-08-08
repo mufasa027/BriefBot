@@ -55,6 +55,16 @@ def main():
     )
 
     saved = save_articles(articles)
+    
+    print("\nClustering stories...")
+    from database.crud import get_articles_sorted_by_score, save_stories
+    from story_engine.cluster import cluster_articles_into_stories
+    
+    raw_arts = get_articles_sorted_by_score(limit=150)
+    if raw_arts:
+        clustered = cluster_articles_into_stories(raw_arts, similarity_threshold=0.45)
+        saved_stories = save_stories(clustered)
+        print(f"✓ Clustered {len(clustered)} stories and saved {saved_stories} updates.")
 
     elapsed = round(time.time() - start, 2)
 

@@ -1,3 +1,4 @@
+from collectors.rss.utils import extract_image_url
 import feedparser
 
 
@@ -12,7 +13,8 @@ def fetch_reuters_news():
     for entry in feed.entries:
         articles.append(
             {
-                "source": "Reuters",
+                "image_url": extract_image_url(entry),
+            "source": "Reuters",
                 "title": entry.title,
                 "url": entry.link,
                 "summary": getattr(entry, "summary", ""),

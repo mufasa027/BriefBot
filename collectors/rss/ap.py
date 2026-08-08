@@ -1,3 +1,4 @@
+from collectors.rss.utils import extract_image_url
 import feedparser
 
 RSS_URL = "https://apnews.com/hub/ap-top-news/rss"
@@ -11,7 +12,8 @@ def fetch_ap_news():
     for entry in feed.entries:
         articles.append(
             {
-                "source": "AP",
+                "image_url": extract_image_url(entry),
+            "source": "AP",
                 "title": entry.title,
                 "url": entry.link,
                 "summary": getattr(entry, "summary", ""),

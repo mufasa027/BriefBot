@@ -1,3 +1,4 @@
+from collectors.rss.utils import extract_image_url
 import feedparser
 
 from config import RSS_FEEDS
@@ -19,6 +20,7 @@ def fetch_bbc_news():
             "url": entry.link,
             "published": entry.published if hasattr(entry, "published") else "",
             "summary": entry.summary if hasattr(entry, "summary") else "",
+            "image_url": extract_image_url(entry),
             "source": "BBC"
         })
 

@@ -1,26 +1,19 @@
-# Virtual Environment
-venv/
-
 # Python
 __pycache__/
 *.py[cod]
-
-# Environment Variables
+*$py.class
+*.so
+venv/
+env/
 .env
 
-# Logs
-logs/
-
-# Output Files
-output/
-
-# Database
+# Project specific
+data/
+media/
+backups/
 *.db
+*.log
 
 # IDE
-.vscode/
 .idea/
-
-# OS Files
-Thumbs.db
-.DS_Store
+.vscode/output/
