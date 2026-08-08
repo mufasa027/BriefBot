@@ -51,15 +51,36 @@ stories = load_story_data()
 st.sidebar.title("⚡ CipherBrief Control Panel")
 
 if st.sidebar.button("📥 Fetch & Process Latest News", use_container_width=True):
-    with st.spinner("Fetching and clustering news (this may take a few minutes)..."):
-        try:
-            import main
-            main.main()
-            st.sidebar.success("News fetched successfully!")
-        except Exception as e:
-            st.sidebar.error(f"Error fetching news: {e}")
-        st.cache_data.clear()
-        st.rerun()
+    from config import OPENROUTER_API_KEY
+    if not OPENROUTER_API_KEY:
+        st.sidebar.error("❌ OPENROUTER_API_KEY is not set in Streamlit Secrets!")
+    else:
+        with st.spinner("Fetching and clustering news (this may take a few minutes)..."):
+            try:
+                import main
+                import sys
+                from io import StringIO
+                
+                # Capture output to avoid spamming the console and to count success
+                original_stdout = sys.stdout
+                sys.stdout = StringIO()
+                try:
+                    main.main()
+                finally:
+                    output = sys.stdout.getvalue()
+                    sys.stdout = original_stdout
+                
+                st.sidebar.success("✅ News fetched & processed successfully!")
+                with st.sidebar.expander("View Logs"):
+                    st.text(output)
+            except Exception as e:
+                st.sidebar.error(f"❌ Error fetching news: {e}")
+            
+            # Delay rerun slightly so the user can read the success message
+            import time
+            time.sleep(3)
+            st.cache_data.clear()
+            st.rerun()
 
 if st.sidebar.button("🔄 Refresh View", use_container_width=True):
     st.cache_data.clear()
