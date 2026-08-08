@@ -74,7 +74,7 @@ def create_database():
                 ("rejected_time", "TEXT"),
                 ("instagram_media_id", "TEXT"),
                 ("reel_video_path", "TEXT"),
-                ("publish_attempts", "INTEGER"),
+                ("publish_attempts", "INTEGER DEFAULT 0"),
                 ("queued_time", "TEXT"),
                 ("publishing_time", "TEXT"),
                 ("published_time", "TEXT"),
@@ -91,6 +91,9 @@ def create_database():
                         cursor.execute(f"ALTER TABLE news ADD COLUMN {col_name} {col_type}")
                     except Exception:
                         pass
+                        
+            # Safely backfill existing NULLs
+            cursor.execute("UPDATE news SET publish_attempts = 0 WHERE publish_attempts IS NULL")
 
             # Migrate stories table
             cursor.execute("PRAGMA table_info(stories)")
@@ -101,6 +104,9 @@ def create_database():
                         cursor.execute(f"ALTER TABLE stories ADD COLUMN {col_name} {col_type}")
                     except Exception:
                         pass
+                        
+            # Safely backfill existing NULLs
+            cursor.execute("UPDATE stories SET publish_attempts = 0 WHERE publish_attempts IS NULL")
 
             conn.commit()
             print("[OK] Migrations completed successfully")

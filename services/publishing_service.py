@@ -49,7 +49,9 @@ def publish_approved_story_as_reel(article):
     transition_article_status(article, "publishing")
 
     # Update DB for attempts
-    attempts = article.get("publish_attempts", 0) + 1
+    attempts_val = article.get("publish_attempts")
+    attempts = int(attempts_val) if attempts_val is not None else 0
+    attempts += 1
     _update_db_publishing_state(art_id, attempts, now_str)
 
     try:
