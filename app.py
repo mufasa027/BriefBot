@@ -363,6 +363,54 @@ with tab_newsroom:
         else:
             st.warning(f"⚠️ Health Notice: Missing Captions={diag['missing_captions_count']}, Missing Images={diag['missing_images_count']}")
 
+    with st.expander("🔐 Credential Diagnostics (Bug #7)"):
+        st.markdown("Diagnosing INSTAGRAM_ACCESS_TOKEN deployed handling:")
+        
+        # 1. os.environ check
+        env_token = os.getenv("INSTAGRAM_ACCESS_TOKEN")
+        st.markdown("**1. `os.getenv('INSTAGRAM_ACCESS_TOKEN')`**")
+        if env_token:
+            st.success("STATUS: PRESENT")
+            st.write(f"Length: {len(env_token)} characters")
+            
+            if len(env_token) > 8:
+                st.write(f"Format Check: Starts with `{env_token[:4]}`... Ends with `{env_token[-4:]}`")
+            else:
+                st.write("Format Check: Token too short to preview safely.")
+                
+            has_whitespace = env_token != env_token.strip()
+            has_newline = '\\n' in env_token or '\\r' in env_token
+            has_quotes = env_token.startswith('"') or env_token.endswith('"') or env_token.startswith("'") or env_token.endswith("'")
+            
+            st.write(f"Contains leading/trailing whitespace: **{has_whitespace}**")
+            st.write(f"Contains newlines: **{has_newline}**")
+            st.write(f"Contains accidental surrounding quotes: **{has_quotes}**")
+        else:
+            st.error("STATUS: MISSING (or empty)")
+
+        # 2. st.secrets check
+        st.markdown("**2. `st.secrets` directly**")
+        try:
+            sec_token = st.secrets.get("INSTAGRAM_ACCESS_TOKEN")
+            if sec_token:
+                st.success("STATUS: PRESENT in st.secrets")
+                st.write(f"Length: {len(sec_token)} characters")
+                st.write(f"Matches os.getenv: **{sec_token == env_token}**")
+            else:
+                st.error("STATUS: MISSING in st.secrets")
+        except Exception as e:
+            st.error(f"Could not read st.secrets: {str(e)}")
+            
+        # 3. Account ID
+        env_acc = os.getenv("INSTAGRAM_ACCOUNT_ID")
+        st.markdown("**3. `INSTAGRAM_ACCOUNT_ID`**")
+        if env_acc:
+            st.success(f"STATUS: PRESENT (Length: {len(env_acc)})")
+            has_quotes_acc = env_acc.startswith('"') or env_acc.endswith('"')
+            st.write(f"Contains accidental quotes: **{has_quotes_acc}**")
+        else:
+            st.error("STATUS: MISSING")
+
     with st.expander("📋 System Activity Logs"):
         logs = logging_service.get_recent_logs(30)
         st.code("".join(logs) if logs else "No system logs recorded yet.", language="text")
