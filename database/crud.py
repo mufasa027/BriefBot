@@ -345,14 +345,7 @@ def get_all_stories(status_filter=None, limit=50):
             overall_story_score=r["overall_story_score"],
             entities=entities,
             status=r["status"],
-            instagram_media_id=r.get("instagram_media_id"),
-            reel_video_path=r.get("reel_video_path"),
-            publish_attempts=r.get("publish_attempts", 0),
-            queued_time=r.get("queued_time"),
-            publishing_time=r.get("publishing_time"),
-            published_time=r.get("published_time"),
-            publish_error=r.get("publish_error"),
-            last_publish_attempt=r.get("last_publish_attempt"),
+
         )
         s_obj.rendered_image_path = r.get("rendered_image_path")
         s_obj.caption = r.get("caption")
