@@ -62,7 +62,7 @@ def handle_generate_story_action(story_obj):
     1. Pre-render Duplicate Check: Skips generation if story is already rendered.
     2. Synthesizes copy, fetches photo, renders post PNG, saves caption/hashtag/metadata files.
     3. Transactional Validation: Verifies all 5 required assets exist.
-    4. Atomic Commit: Marks status as 'generated' if valid, or rolls back to 'new' if any asset is missing.
+    4. Atomic Commit: Marks status as 'post_ready' if valid, or rolls back to 'new' if any asset is missing.
     """
     start_time = time.time()
     from story_engine.editorial import synthesize_story_post_copy
@@ -74,7 +74,7 @@ def handle_generate_story_action(story_obj):
     existing_render = s_dict.get("rendered_image_path") or get_render_path_for_uuid(story_id)
 
     # 1. PRE-RENDER DUPLICATE CHECK (Bug #5)
-    if s_dict.get("status") in ["generated", "approved", "queued", "published"]:
+    if s_dict.get("status") in ["post_ready", "approved", "queued", "published"]:
         is_valid, _ = validate_story_assets(story_id, existing_render, status=s_dict.get("status"))
         if is_valid:
             log_event("DUPLICATE_RENDER_SKIPPED", f"Skipped duplicate rendering for Story #{story_id}. Existing assets valid.", article_uuid=story_id)
@@ -117,22 +117,22 @@ def handle_generate_story_action(story_obj):
 
     save_caption_file(story_id, synth["caption"])
     save_hashtags_file(story_id, synth["hashtags"])
-    meta_path = save_article_json(s_dict, status="generated")
+    meta_path = save_article_json(s_dict, status="post_ready")
     metadata_res = f"OK ({meta_path})" if meta_path else "FAILED"
 
     # 3. TRANSACTIONAL 5-ASSET VALIDATION (Bug #7)
-    is_valid, missing_assets = validate_story_assets(story_id, rendered_path, status="generated")
+    is_valid, missing_assets = validate_story_assets(story_id, rendered_path, status="post_ready")
     duration = round(time.time() - start_time, 2)
 
     if is_valid:
         s_dict["rendered_image_path"] = rendered_path
         s_dict["caption"] = synth["caption"]
         s_dict["hashtags"] = synth["hashtags"]
-        s_dict["status"] = "generated"
+        s_dict["status"] = "post_ready"
         s_dict["generated_time"] = now_str
 
         if hasattr(story_obj, "status"):
-            story_obj.status = "generated"
+            story_obj.status = "post_ready"
             story_obj.rendered_image_path = rendered_path
             story_obj.caption = synth["caption"]
             story_obj.hashtags = synth["hashtags"]
@@ -163,7 +163,7 @@ def handle_generate_story_action(story_obj):
 
         log_event(
             "STORY_GEN_DIAGNOSTIC",
-            f"DIAGNOSTIC SUMMARY: Story ID={story_id} | Image URL={img_url[:40]} | Download={download_res} | Renderer={renderer_res} | Caption={caption_res} | Hashtag={hashtag_res} | Metadata={metadata_res} | Overall Status=GENERATED | Time Taken={duration}s",
+            f"DIAGNOSTIC SUMMARY: Story ID={story_id} | Image URL={img_url[:40]} | Download={download_res} | Renderer={renderer_res} | Caption={caption_res} | Hashtag={hashtag_res} | Metadata={metadata_res} | Overall Status=POST_READY | Time Taken={duration}s",
             article_uuid=story_id
         )
         return s_dict, None

@@ -142,7 +142,7 @@ def update_article_generated_post(article_id, rendered_image_path, caption, hash
             SET rendered_image_path = ?,
                 caption = ?,
                 hashtags = ?,
-                status = 'generated'
+                status = 'post_ready'
         """
         params = [rendered_image_path, caption, hashtags]
 

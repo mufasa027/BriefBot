@@ -123,8 +123,17 @@ Synthesize coverage of a news event into an authoritative Instagram post payload
 Requirements:
 - improved_headline: Punchy 6-10 word authoritative headline.
 - summary: Synthesized 2-3 sentence summary (max 110 words).
-- caption: Comprehensive Instagram post caption summarizing key facts with context and call-to-action.
-- hashtags: EXACTLY 10 hashtags (6 article-specific entity/topic tags + 4 CipherBrief growth tags selected from #CipherBrief #WorldNews #GlobalNews #NewsUpdate #Breaking #DailyNews #CurrentAffairs #TrendingNews).
+- caption: Comprehensive Instagram post caption summarizing key facts. 
+  CAPTION RULES:
+  - 2-4 short paragraphs
+  - clear news-focused hook/context
+  - concise explanation of why the story matters
+  - optional key detail
+  - professional CTA
+  - use exactly @cipherbrief when referring to the account
+  - never invent another account handle
+  - do not make the caption simply repeat the headline
+- hashtags: Generate 10-12 relevant hashtags. Minimum 6 story-specific and 4 general/growth hashtags.
 
 Return ONLY valid JSON:
 {

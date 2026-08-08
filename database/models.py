@@ -43,17 +43,6 @@ class NewsArticle(Base):
     rejected_time = Column(String)
     posted = Column(Integer, default=0)
     posted_time = Column(String)
-    instagram_post_id = Column(String)  # legacy compatibility
-    
-    # Reel Publishing
-    instagram_media_id = Column(String)
-    reel_video_path = Column(String)
-    publish_attempts = Column(Integer, default=0)
-    queued_time = Column(String)
-    publishing_time = Column(String)
-    published_time = Column(String)
-    publish_error = Column(Text)
-    last_publish_attempt = Column(String)
 
 
 class StoryModel(Base):
@@ -81,14 +70,3 @@ class StoryModel(Base):
     rejected_time = Column(String)
     posted = Column(Integer, default=0)
     posted_time = Column(String)
-    instagram_post_id = Column(String)  # legacy compatibility
-    
-    # Reel Publishing
-    instagram_media_id = Column(String)
-    reel_video_path = Column(String)
-    publish_attempts = Column(Integer, default=0)
-    queued_time = Column(String)
-    publishing_time = Column(String)
-    published_time = Column(String)
-    publish_error = Column(Text)
-    last_publish_attempt = Column(String)

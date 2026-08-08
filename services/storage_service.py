@@ -15,7 +15,7 @@ LOGS_DIR = os.path.join(BASE_DATA_DIR, "logs")
 # C-08 FIX: Added "queued" and "publishing" to status directories.
 # Without these, save_article_json() raises FileNotFoundError when
 # transition_article_status() saves JSON with status="queued" or "publishing".
-for status_folder in ["new", "generated", "approved", "rejected", "queued", "publishing", "published", "failed"]:
+for status_folder in ["new", "post_ready", "approved", "rejected", "queued", "publishing", "published", "failed"]:
     os.makedirs(os.path.join(ARTICLES_DIR, status_folder), exist_ok=True)
 
 os.makedirs(RENDERS_DIR, exist_ok=True)
@@ -75,7 +75,7 @@ def get_render_path_for_uuid(article_uuid):
     return os.path.abspath(os.path.join(RENDERS_DIR, f"post_{article_uuid}.png"))
 
 
-def validate_story_assets(story_id, render_path, status="generated"):
+def validate_story_assets(story_id, render_path, status="post_ready"):
     """
     Strict Transactional Validation requiring ALL assets to exist:
     1. render.png (must be valid image)

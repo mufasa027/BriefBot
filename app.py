@@ -4,11 +4,6 @@ import math
 import os
 
 from database.crud import get_all_stories
-from services.queue_service import handle_generate_story_action, transition_article_status
-from services.publishing_service import publish_approved_story_as_reel
-from services import logging_service
-import importlib
-importlib.reload(logging_service)
 from services.storage_service import get_render_path_for_uuid, CAPTIONS_DIR, HASHTAGS_DIR, ARTICLES_DIR
 from database.diagnostics import run_database_diagnostics
 from ai.ranker import generate_score_explanation
@@ -92,7 +87,7 @@ search = st.sidebar.text_input("🔍 Search News Stories", placeholder="Search t
 
 status_filter = st.sidebar.selectbox(
     "Workflow Status",
-    ["All", "new", "generated", "approved", "rejected", "queued", "published", "failed"]
+    ["All", "new", "post_ready", "approved", "rejected"]
 )
 
 categories = ["All"] + sorted(list(set([s.category for s in stories if s.category]))) if stories else ["All"]
@@ -138,13 +133,12 @@ with tab_newsroom:
     total_stories = len(filtered_stories)
     approved_count = len([s for s in stories if s.status == "approved"])
     rejected_count = len([s for s in stories if s.status == "rejected"])
-    published_count = len([s for s in stories if s.status == "published"])
-    avg_score = f"{sum([s.overall_story_score for s in stories]) / max(1, len(stories)):.1f}/100" if stories else "N/A"
+    posts_ready_count = len([s for s in stories if s.status == "post_ready"])
 
     m1.metric("Active Stories", total_stories)
-    m2.metric("Approved Stories", approved_count)
-    m3.metric("Rejected Stories", rejected_count)
-    m4.metric("Published Stories", published_count)
+    m2.metric("Posts Ready", posts_ready_count)
+    m3.metric("Approved Posts", approved_count)
+    m4.metric("Rejected Stories", rejected_count)
     m5.metric("Avg Story Score", avg_score)
 
     st.divider()
@@ -246,9 +240,8 @@ with tab_newsroom:
                         st.markdown("#### 🗄️ Database Records")
                         st.write(f"**Story UUID:** `{story_id}`")
                         st.write(f"**Primary Article ID:** `{story.primary_article_id}`")
-                        if story.instagram_media_id:
-                            st.write(f"**Instagram Media ID:** `{story.instagram_media_id}`")
-                            st.write(f"**Reel Path:** `{story.reel_video_path}`")
+                        if story.rendered_image_path:
+                            st.write(f"**Render Path:** `{story.rendered_image_path}`")
                             
                         # Feature 7: Audit Log
                         st.markdown("#### 📜 Audit Log Timeline")
@@ -260,92 +253,96 @@ with tab_newsroom:
                 a1, a2, a3, a4, a5 = st.columns(5)
 
                 # 1. GENERATE / SYNTHESIZE STORY POST
-                if a1.button("⚡ Synthesize Post", key=f"gen_s_{story_id}"):
+                if a1.button("⚡ Synthesize Post", key=f"gen_s_{story_id}", disabled=(current_status in ["approved", "rejected"])):
                     with st.spinner("Synthesizing multi-source copy & rendering post..."):
                         updated_s, err = handle_generate_story_action(story)
                         if err:
                             st.error(f"Generation Error: {err}")
                         else:
+                            transition_article_status(s_dict, "post_ready")
                             st.success("✓ Multi-source story post synthesized!")
                             st.cache_data.clear()
                             st.rerun()
 
-                # 2. PREVIEW (Bug #1 Fix)
-                with a2.popover("👁️ Live Preview"):
-                    st.markdown("### 📱 Instagram Story Render Preview")
+                # 2. PREVIEW / MANUAL CONTENT WORKFLOW
+                if current_status == "post_ready":
+                    with a2.popover("👁️ Live Preview"):
+                        st.markdown("### 📱 Generated Post Preview")
 
-                    if has_render:
-                        try:
-                            from PIL import Image
-                            st.image(Image.open(render_path), use_container_width=True)
-                        except OSError as e:
-                            st.error(f"⚠️ Live Preview Error: Could not render image ({e})")
-                    else:
-                        st.warning("⚠️ Render PNG missing or invalid. Please click 'Synthesize Post' first.")
+                        if has_render:
+                            try:
+                                from PIL import Image
+                                img = Image.open(render_path)
+                                st.image(img, use_container_width=True)
+                                
+                                with open(render_path, "rb") as f:
+                                    st.download_button("⬇️ Download Post Image", f, file_name=f"cipherbrief_post_{story_id}.png", mime="image/png")
+                            except OSError as e:
+                                st.error(f"⚠️ Live Preview Error: Could not render image ({e})")
+                        else:
+                            st.warning("⚠️ Render PNG missing or invalid.")
 
-                    # Load caption from file if missing from memory
-                    caption_text = story.caption
-                    if (not caption_text or pd.isna(caption_text)) and os.path.exists(cap_p):
-                        try:
-                            with open(cap_p, "r", encoding="utf-8") as f:
-                                caption_text = f.read()
-                        except OSError:
-                            pass
+                        # Load caption from file if missing from memory
+                        caption_text = story.caption
+                        if (not caption_text or pd.isna(caption_text)) and os.path.exists(cap_p):
+                            try:
+                                with open(cap_p, "r", encoding="utf-8") as f:
+                                    caption_text = f.read()
+                            except OSError:
+                                pass
 
-                    # Load hashtags from file if missing from memory
-                    hashtags_text = story.hashtags
-                    if (not hashtags_text or pd.isna(hashtags_text)) and os.path.exists(hash_p):
-                        try:
-                            with open(hash_p, "r", encoding="utf-8") as f:
-                                hashtags_text = f.read()
-                        except OSError:
-                            pass
+                        # Load hashtags from file if missing from memory
+                        hashtags_text = story.hashtags
+                        if (not hashtags_text or pd.isna(hashtags_text)) and os.path.exists(hash_p):
+                            try:
+                                with open(hash_p, "r", encoding="utf-8") as f:
+                                    hashtags_text = f.read()
+                            except OSError:
+                                pass
 
-                    st.markdown("**Synthesized Caption:**")
-                    if caption_text:
-                        st.text_area("Caption", caption_text, height=120, key=f"cap_area_s_{story_id}")
-                    else:
-                        st.error("⚠️ Caption missing or failed generation.")
+                        st.markdown("**Caption:**")
+                        if caption_text:
+                            st.code(caption_text, language="text")
+                        else:
+                            st.error("⚠️ Caption missing or failed generation.")
 
-                    st.markdown("**Hashtags (Exactly 10 Tags):**")
-                    if hashtags_text:
-                        st.code(hashtags_text, language="text")
-                    else:
-                        st.error("⚠️ Hashtags missing or failed generation.")
-
-                    st.markdown("**Metadata:**")
-                    st.caption(f"⭐ Primary Source: `{story.primary_source}`")
-                    st.caption(f"📁 Image Path: `{render_path}`")
-                    st.caption(f"⏰ Generated Time: `{story.generated_time or 'N/A'}`")
+                        st.markdown("**Hashtags:**")
+                        if hashtags_text:
+                            st.code(hashtags_text, language="text")
+                        else:
+                            st.error("⚠️ Hashtags missing or failed generation.")
 
                 # 3. APPROVE
-                if a3.button("✅ Approve Story", key=f"app_s_{story_id}"):
-                    if not has_render or not has_caption_file:
-                        st.error("Cannot approve: Required assets (render PNG, caption.txt) missing. Click 'Synthesize Post' first.")
-                    else:
-                        transition_article_status(s_dict, "approved")
-                        st.success("Story Approved!")
-                        st.cache_data.clear()
-                        st.rerun()
+                if current_status == "post_ready":
+                    if a3.button("✅ Approve Post", key=f"app_s_{story_id}"):
+                        if not has_render or not has_caption_file:
+                            st.error("Cannot approve: Required assets missing.")
+                        else:
+                            transition_article_status(s_dict, "approved")
+                            st.success("Story Approved!")
+                            st.cache_data.clear()
+                            st.rerun()
 
                 # 4. REJECT
-                if a4.button("❌ Reject Story", key=f"rej_s_{story_id}"):
-                    transition_article_status(s_dict, "rejected")
-                    st.warning("Story Rejected.")
-                    st.cache_data.clear()
-                    st.rerun()
-
-                # 5. PUBLISH STORY (Reels)
-                if a5.button("🚀 Publish Reel", key=f"pub_s_{story_id}", disabled=(current_status != "approved")):
-                    with st.spinner("Generating MP4 & Publishing Reel to Instagram..."):
-                        success, res_msg = publish_approved_story_as_reel(s_dict)
-                        if success:
-                            st.balloons()
-                            st.success(f"✓ Published as Reel! IG Media ID: {res_msg}")
-                        else:
-                            st.error(f"Publish Failed: {res_msg}")
+                if current_status in ["new", "post_ready"]:
+                    if a4.button("❌ Reject Story", key=f"rej_s_{story_id}"):
+                        transition_article_status(s_dict, "rejected")
+                        st.warning("Story Rejected.")
                         st.cache_data.clear()
                         st.rerun()
+
+                # 5. EXPORT / MANUAL POSTING STATUS
+                if current_status == "approved":
+                    st.success("✅ READY TO POST")
+                    e1, e2, e3 = st.columns(3)
+                    with e1:
+                        if has_render:
+                            with open(render_path, "rb") as f:
+                                st.download_button("⬇️ Download Image", f, file_name=f"cipherbrief_post_{story_id}.png", mime="image/png", use_container_width=True)
+                    with e2:
+                        st.code(story.caption or "Missing Caption", language="text")
+                    with e3:
+                        st.code(story.hashtags or "Missing Hashtags", language="text")
 
     # -----------------------
     # SYSTEM LOGS & DIAGNOSTICS
@@ -363,100 +360,13 @@ with tab_newsroom:
         else:
             st.warning(f"⚠️ Health Notice: Missing Captions={diag['missing_captions_count']}, Missing Images={diag['missing_images_count']}")
 
-    with st.expander("🔐 Credential Diagnostics (Bug #7)"):
-        st.markdown("Diagnosing INSTAGRAM_ACCESS_TOKEN deployed handling:")
-        
-        # 1. os.environ check
-        env_token = os.getenv("INSTAGRAM_ACCESS_TOKEN")
-        st.markdown("**1. `os.getenv('INSTAGRAM_ACCESS_TOKEN')`**")
-        if env_token:
-            st.success("STATUS: PRESENT")
-            st.write(f"Length: {len(env_token)} characters")
-            
-            if len(env_token) > 8:
-                st.write(f"Format Check: Starts with `{env_token[:4]}`... Ends with `{env_token[-4:]}`")
-            else:
-                st.write("Format Check: Token too short to preview safely.")
-                
-            has_whitespace = env_token != env_token.strip()
-            has_newline = '\\n' in env_token or '\\r' in env_token
-            has_quotes = env_token.startswith('"') or env_token.endswith('"') or env_token.startswith("'") or env_token.endswith("'")
-            
-            st.write(f"Contains leading/trailing whitespace: **{has_whitespace}**")
-            st.write(f"Contains newlines: **{has_newline}**")
-            st.write(f"Contains accidental surrounding quotes: **{has_quotes}**")
-        else:
-            st.error("STATUS: MISSING (or empty)")
-
-        # 2. st.secrets check
-        st.markdown("**2. `st.secrets` directly**")
-        try:
-            sec_token = st.secrets.get("INSTAGRAM_ACCESS_TOKEN")
-            if sec_token:
-                st.success("STATUS: PRESENT in st.secrets")
-                st.write(f"Length: {len(sec_token)} characters")
-                st.write(f"Matches os.getenv: **{sec_token == env_token}**")
-            else:
-                st.error("STATUS: MISSING in st.secrets")
-        except Exception as e:
-            st.error(f"Could not read st.secrets: {str(e)}")
-            
-        # 3. Account ID
-        env_acc = os.getenv("INSTAGRAM_ACCOUNT_ID")
-        st.markdown("**3. `INSTAGRAM_ACCOUNT_ID`**")
-        if env_acc:
-            st.success(f"STATUS: PRESENT (Length: {len(env_acc)})")
-            has_quotes_acc = env_acc.startswith('"') or env_acc.endswith('"')
-            st.write(f"Contains accidental quotes: **{has_quotes_acc}**")
-        else:
-            st.error("STATUS: MISSING")
+    pass
 
     with st.expander("📋 System Activity Logs"):
         logs = logging_service.get_recent_logs(30)
         st.code("".join(logs) if logs else "No system logs recorded yet.", language="text")
 
-with tab_queue:
-    st.subheader("🚀 Publishing Queue")
-    st.markdown("Track the status of approved and publishing stories.")
-    
-    queued = [s for s in stories if s.status == "queued"]
-    publishing = [s for s in stories if s.status == "publishing"]
-    published = [s for s in stories if s.status == "published"]
-    failed = [s for s in stories if s.status == "failed"]
-    
-    q_col1, q_col2, q_col3, q_col4 = st.columns(4)
-    q_col1.metric("Queued", len(queued))
-    q_col2.metric("Publishing", len(publishing))
-    q_col3.metric("Published", len(published))
-    q_col4.metric("Failed", len(failed))
-    
-    st.divider()
-    
-    # Render queue rows
-    all_queue_stories = queued + publishing + published + failed
-    all_queue_stories = sorted(all_queue_stories, key=lambda s: s.latest_update, reverse=True)
-    
-    if not all_queue_stories:
-        st.info("No stories in the publishing pipeline currently.")
-    else:
-        for sq in all_queue_stories:
-            with st.container(border=True):
-                qc1, qc2, qc3 = st.columns([3, 1, 1])
-                qc1.markdown(f"**{sq.story_title}**")
-                
-                status_color = {"queued": "🔵", "publishing": "🟡", "published": "🟢", "failed": "🔴"}
-                icon = status_color.get(sq.status, "⚪")
-                qc2.markdown(f"{icon} **{str(sq.status).upper()}**")
-                
-                # timestamps
-                if sq.status == "published":
-                    qc3.caption(f"Published: {sq.posted_time}")
-                elif sq.status == "failed":
-                    qc3.caption(f"Failed: {getattr(sq, 'rejected_time', None) or sq.latest_update}")
-                    if getattr(sq, "publish_error", None):
-                        st.error(sq.publish_error)
-                else:
-                    qc3.caption(f"Approved: {getattr(sq, 'approved_time', None) or sq.latest_update}")
+    pass
 
 
 with tab_analytics:
@@ -470,14 +380,9 @@ with tab_analytics:
     # Images downloaded - approx based on images available
     images_downloaded = sum(1 for s in stories if s.articles and s.articles[0].get("image_url"))
     
-    generated_stories = [s for s in stories if s.status in ["generated", "approved", "queued", "publishing", "published"]]
+    generated_stories = [s for s in stories if s.status in ["post_ready", "approved"]]
     gen_success_rate = f"{(len(generated_stories) / max(1, len(stories))) * 100:.1f}%"
-    
-    published_total = len([s for s in stories if s.status == "published"])
-    failed_total = len([s for s in stories if s.status == "failed"])
-    pub_success_rate = "N/A"
-    if (published_total + failed_total) > 0:
-        pub_success_rate = f"{(published_total / (published_total + failed_total)) * 100:.1f}%"
+
         
     avg_score_num = sum(s.overall_story_score for s in stories) / max(1, len(stories))
     
@@ -489,7 +394,6 @@ with tab_analytics:
         st.metric("Images Downloaded", images_downloaded)
     with a2:
         st.metric("Generation Success Rate", gen_success_rate)
-        st.metric("Publishing Success Rate", pub_success_rate)
         st.metric("Average AI Score", f"{avg_score_num:.1f}/100")
     with a3:
         st.markdown("**Top Categories**")

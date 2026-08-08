@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-CipherBrief is a robust, end-to-end data pipeline and dashboard that autonomously ingests global news, uses AI to cluster and rank stories, synthesizes editorial captions, and renders stunning typographic images ready for social media publishing. 
+CipherBrief is a robust, end-to-end data pipeline and dashboard that autonomously ingests global news, uses AI to cluster and rank stories, synthesizes editorial captions, and renders stunning typographic images ready for social media publishing.
 
 ![Dashboard](assets/cipherbrief_dashboard.jpg)
 
@@ -18,9 +18,9 @@ CipherBrief is a robust, end-to-end data pipeline and dashboard that autonomousl
 - **🧠 AI Story Clustering:** Detects when multiple outlets report on the same event and clusters them into a single, comprehensive "Story" instead of redundant articles.
 - **⚖️ Editorial Ranking Engine:** Scores stories on virality, importance, and freshness to surface only the most critical global events.
 - **🎨 Automated Asset Rendering:** Built-in Python/OpenCV renderer dynamically generates beautiful, branded, typographic Instagram-ready image posts.
-- **📝 Automated Copywriting:** Uses LLMs to synthesize engaging captions and relevant hashtags.
-- **📊 Streamlit Dashboard:** A production-grade UI for human-in-the-loop approval and live previewing.
-- **🚀 One-Click Publishing:** Directly publishes approved stories to Instagram or exports them to GitHub Storage.
+- **📝 Automated Copywriting:** Uses LLMs to synthesize engaging captions (with context and CTAs) and strict hashtag generation (6 story-specific + 4 growth tags).
+- **📊 Streamlit Dashboard:** A production-grade UI for human-in-the-loop content generation, live previewing, and editorial approval.
+- **🚀 Manual Export Workflow:** Once approved, users can easily download the generated image and copy the caption/hashtags directly from the dashboard for final posting on Instagram.
 
 ---
 
@@ -34,10 +34,10 @@ graph TD
     C -->|Existing Event| D
     D --> E(Editorial AI Ranker)
     E --> F[Dashboard Review]
-    F -->|Approve| G(Content Synthesizer)
+    F -->|Synthesize| G(Content Synthesizer)
     G --> H(Image Renderer)
-    H --> I[Publishing Pipeline]
-    I --> J[Instagram]
+    H --> I[Dashboard Live Preview]
+    I -->|Approve & Download| J[Manual Instagram Posting]
 ```
 
 ![Post Rendering](assets/cipherbrief_post.jpg)
@@ -83,8 +83,6 @@ streamlit run app.py
 |----------|-------------|---------|
 | `OPENROUTER_API_KEY` | Required for AI clustering & captions | `sk-or-v1-...` |
 | `DATABASE_NAME` | SQLite database file | `briefbot.db` |
-| `INSTAGRAM_USERNAME` | (Optional) For direct publishing | `my_news_page` |
-| `INSTAGRAM_PASSWORD` | (Optional) For direct publishing | `********` |
 
 ---
 
@@ -96,8 +94,7 @@ CipherBrief/
 ├── collectors/         # RSS feed parsers and data ingestion
 ├── database/           # SQLite schemas, migrations, and CRUD operations
 ├── designer/           # OpenCV/Pillow typographic image renderer
-├── publisher/          # Export to GitHub Storage & Instagram
-├── services/           # Core business logic (Storage, Queue, Publishing)
+├── services/           # Core business logic (Storage, Queue, Image Fetcher)
 ├── story_engine/       # Similarity detection and clustering algorithms
 ├── app.py              # Streamlit human-in-the-loop dashboard
 ├── main.py             # CLI pipeline entrypoint
@@ -109,7 +106,7 @@ CipherBrief/
 ## 🛠️ Tech Stack
 - **Backend:** Python 3.11, SQLAlchemy, SQLite
 - **Frontend:** Streamlit
-- **AI/LLM:** OpenRouter (GPT-4 / Claude / Llama)
+- **AI/LLM:** OpenRouter (GPT-4 / Claude / Llama / DeepSeek)
 - **Image Processing:** OpenCV, Pillow, Numpy
 - **Data Collection:** Feedparser, Newspaper3k/4k
 
@@ -118,8 +115,7 @@ CipherBrief/
 ## 🗺️ Roadmap
 - [ ] Add Docker support for one-command deployment
 - [ ] Implement robust CI/CD pipeline via GitHub Actions
-- [ ] Full suite of unit tests with `pytest`
-- [ ] Support for video generation (Reels/TikTok)
+- [x] Full suite of unit tests with `pytest`
 - [ ] Add Multi-Language Translation support
 
 ---

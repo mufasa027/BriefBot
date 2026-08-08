@@ -35,7 +35,7 @@ def run_database_diagnostics():
         dup_story_ids = cursor.fetchall()
 
         # 6. Generated Stories Checks
-        cursor.execute("SELECT story_id, rendered_image_path, status FROM stories WHERE status = 'generated'")
+        cursor.execute("SELECT story_id, rendered_image_path, status FROM stories WHERE status = 'post_ready'")
         generated_stories = cursor.fetchall()
 
         missing_images = []
