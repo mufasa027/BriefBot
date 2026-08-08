@@ -24,10 +24,13 @@ COLORS = {
     "footer_divider": (255, 255, 255, 30),
 }
 
+import os
+from config import BASE_DIR
+
 # TrueType Font Paths
 FONTS = {
-    "bold": "C:/Windows/Fonts/arialbd.ttf",
-    "regular": "C:/Windows/Fonts/arial.ttf",
+    "bold": os.path.join(BASE_DIR, "assets", "fonts", "Roboto-Bold.ttf"),
+    "regular": os.path.join(BASE_DIR, "assets", "fonts", "Roboto-Regular.ttf"),
 }
 
 # Headline Configuration & Box Layout
