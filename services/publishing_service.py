@@ -56,21 +56,21 @@ def publish_approved_story_as_reel(article):
 
     try:
         # 4. Generate MP4
-        mp4_path = generate_static_reel(png_path, art_uuid)
+        mp4_path, gen_err = generate_static_reel(png_path, art_uuid)
         if not mp4_path:
-            return _fail_publish(article, "Failed to generate MP4 via FFmpeg.")
+            return _fail_publish(article, f"Reel generation failed: {gen_err}")
 
         # 5. Sync to GitHub to get Public URL
-        public_mp4_url = sync_approved_post_to_github(article)
+        public_mp4_url, sync_err = sync_approved_post_to_github(article)
         if not public_mp4_url:
-            return _fail_publish(article, "Failed to sync MP4 to GitHub Storage (no public URL).")
+            return _fail_publish(article, f"GitHub sync failed: {sync_err}")
 
         # 6. Publish to Instagram
         caption_full = f"{caption}\n\n{hashtags}"
-        ig_post_id = publish_reel_to_instagram(public_mp4_url, caption_full)
+        ig_post_id, ig_err = publish_reel_to_instagram(public_mp4_url, caption_full)
 
         if not ig_post_id:
-            return _fail_publish(article, "Failed to publish Reel to Instagram Graph API.")
+            return _fail_publish(article, f"Instagram publish failed: {ig_err}")
 
         # 7. Success!
         article["posted"] = 1

@@ -18,11 +18,12 @@ def publish_reel_to_instagram(video_public_url, caption_text):
     from settings import INSTAGRAM_PUBLISH_MODE
     if INSTAGRAM_PUBLISH_MODE == "TEST":
         print("[Notice] TEST MODE: Bypassing actual Instagram Reels publishing.")
-        return "test_mock_ig_reel_id_9999"
+        return "test_mock_ig_reel_id_9999", None
 
     if not INSTAGRAM_ACCOUNT_ID or not INSTAGRAM_ACCESS_TOKEN:
-        print("[Error] Instagram Graph API skipped (Credentials missing).")
-        return None
+        err = "Instagram Graph API skipped (Credentials missing)."
+        print(f"[Error] {err}")
+        return None, err
 
     base_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{INSTAGRAM_ACCOUNT_ID}"
 
@@ -35,8 +36,9 @@ def publish_reel_to_instagram(video_public_url, caption_text):
     }
     r_container = requests.post(f"{base_url}/media", data=container_payload)
     if r_container.status_code != 200:
-        print(f"[Error] Failed to create Instagram Reels container: {r_container.text}")
-        return None
+        err = f"Failed to create Instagram Reels container: {r_container.text}"
+        print(f"[Error] {err}")
+        return None, err
 
     creation_id = r_container.json().get("id")
     print(f"[OK] Instagram Reels container created: {creation_id}")
@@ -55,16 +57,19 @@ def publish_reel_to_instagram(video_public_url, caption_text):
                 print("[OK] Reels container processed successfully.")
                 break
             elif status_code == "ERROR":
-                print("[Error] Reels container processing failed on Meta's end.")
-                return None
+                err = "Reels container processing failed on Meta's end."
+                print(f"[Error] {err}")
+                return None, err
             else:
                 print(f"[Wait] Container status: {status_code}...")
         else:
-            print(f"[Error] Failed to check status: {r_status.text}")
-            return None
+            err = f"Failed to check status: {r_status.text}"
+            print(f"[Error] {err}")
+            return None, err
     else:
-        print("[Error] Reels container processing timed out.")
-        return None
+        err = "Reels container processing timed out."
+        print(f"[Error] {err}")
+        return None, err
 
     # Step C: Publish Container
     publish_payload = {
@@ -76,8 +81,9 @@ def publish_reel_to_instagram(video_public_url, caption_text):
     if r_publish.status_code == 200:
         post_id = r_publish.json().get("id")
         print(f"[OK] Published Reel to Instagram! Post ID: {post_id}")
-        return post_id
+        return post_id, None
     else:
-        print(f"[Error] Instagram Reel publish failed: {r_publish.text}")
-        return None
+        err = f"Instagram Reel publish failed: {r_publish.text}"
+        print(f"[Error] {err}")
+        return None, err
 

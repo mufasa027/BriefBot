@@ -8,11 +8,12 @@ def generate_static_reel(png_path, article_uuid):
     """
     Converts a static 1080x1920 PNG into a static MP4 video using FFmpeg.
     Ensures optimal encoding for Instagram Reels.
-    Returns the path to the generated MP4 file or None if it fails.
+    Returns a tuple: (mp4_path, error_message).
     """
     if not png_path or not os.path.exists(png_path):
-        log_event("VIDEO_GEN_FAILED", f"Source PNG missing: {png_path}", article_uuid=article_uuid, level="ERROR")
-        return None
+        err = f"Source PNG missing: {png_path}"
+        log_event("VIDEO_GEN_FAILED", err, article_uuid=article_uuid, level="ERROR")
+        return None, err
 
     # Derive output MP4 path from the PNG path
     mp4_path = png_path.replace(".png", ".mp4")
@@ -42,15 +43,18 @@ def generate_static_reel(png_path, article_uuid):
         
         if os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 1000:
             log_event("VIDEO_GEN_SUCCESS", f"Generated Reel MP4: {mp4_path}", article_uuid=article_uuid)
-            return os.path.abspath(mp4_path)
+            return os.path.abspath(mp4_path), None
         else:
-            log_event("VIDEO_GEN_FAILED", "FFmpeg completed but output file is missing or too small", article_uuid=article_uuid, level="ERROR")
-            return None
+            err = "FFmpeg completed but output file is missing or too small."
+            log_event("VIDEO_GEN_FAILED", err, article_uuid=article_uuid, level="ERROR")
+            return None, err
 
     except subprocess.CalledProcessError as e:
         err_out = e.stderr or e.stdout
-        log_event("VIDEO_GEN_ERROR", f"FFmpeg error: {err_out}", article_uuid=article_uuid, level="ERROR")
-        return None
+        err = f"FFmpeg error: {err_out}"
+        log_event("VIDEO_GEN_ERROR", err, article_uuid=article_uuid, level="ERROR")
+        return None, err
     except Exception as e:
-        log_event("VIDEO_GEN_ERROR", f"Exception during video generation: {str(e)}", article_uuid=article_uuid, level="ERROR")
-        return None
+        err = f"Exception during video generation: {str(e)}"
+        log_event("VIDEO_GEN_ERROR", err, article_uuid=article_uuid, level="ERROR")
+        return None, err

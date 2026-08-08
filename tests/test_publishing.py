@@ -10,9 +10,9 @@ from services.publishing_service import publish_approved_story_as_reel
 def test_publish_attempts_increment(mock_exists, mock_transition, mock_publish, mock_sync, mock_generate, mock_update_db):
     """Test that publish_attempts safely increments whether it is None, 0, or an integer."""
     mock_exists.return_value = True
-    mock_generate.return_value = "fake_path.mp4"
-    mock_sync.return_value = "http://fake/mp4"
-    mock_publish.return_value = "fake_ig_id"
+    mock_generate.return_value = ("fake_path.mp4", None)
+    mock_sync.return_value = ("http://fake/mp4", None)
+    mock_publish.return_value = ("fake_ig_id", None)
     
     # 1. Test when publish_attempts is None
     article_none = {

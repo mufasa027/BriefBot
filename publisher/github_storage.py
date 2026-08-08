@@ -24,8 +24,9 @@ def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
     Remains 100% FREE using standard GitHub Personal Access Tokens.
     """
     if not GITHUB_TOKEN or not GITHUB_REPO:
-        print(f"[Notice] GitHub Storage sync skipped (GITHUB_TOKEN or GITHUB_REPO not set). Saved locally to {repo_file_path}")
-        return False
+        err = f"GitHub Storage sync skipped (GITHUB_TOKEN or GITHUB_REPO not set). Saved locally to {repo_file_path}"
+        print(f"[Notice] {err}")
+        return False, err
 
     url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{repo_file_path}"
     headers = {
@@ -52,10 +53,11 @@ def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
     r_put = requests.put(url, headers=headers, json=payload)
     if r_put.status_code in [200, 201]:
         print(f"[OK] Synced to GitHub Storage: {repo_file_path}")
-        return True
+        return True, None
     else:
-        print(f"[Error] GitHub upload failed ({r_put.status_code}): {r_put.text[:100]}")
-        return False
+        err = f"GitHub upload failed ({r_put.status_code}): {r_put.text[:100]}"
+        print(f"[Error] {err}")
+        return False, err
 
 
 def sync_approved_post_to_github(article):
@@ -83,13 +85,15 @@ def sync_approved_post_to_github(article):
     if mp4_path and os.path.exists(mp4_path):
         with open(mp4_path, "rb") as f:
             video_bytes = f.read()
-        success = upload_file_to_github(
+        success, err = upload_file_to_github(
             repo_file_path=mp4_repo_path,
             file_content_bytes=video_bytes,
             commit_message=f"storage: Add post MP4 video for article #{article_id}"
         )
         if success:
             mp4_public_url = get_raw_github_url(mp4_repo_path)
+        else:
+            return None, err
 
     # 2. Sync Metadata JSON
     json_bytes = json.dumps(article, indent=2, default=str).encode("utf-8")
@@ -107,4 +111,4 @@ def sync_approved_post_to_github(article):
         commit_message=f"storage: Add caption text for #{article_id}"
     )
 
-    return mp4_public_url
+    return mp4_public_url, None
