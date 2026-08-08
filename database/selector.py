@@ -1,5 +1,5 @@
 from database.connection import get_connection
-from config import POSTS_PER_DAY
+from settings import POSTS_PER_DAY
 
 
 def get_daily_posts():

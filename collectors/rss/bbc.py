@@ -1,7 +1,7 @@
 from collectors.rss.utils import extract_image_url
 import feedparser
 
-from config import RSS_FEEDS
+from settings import RSS_FEEDS
 
 
 def fetch_bbc_news():

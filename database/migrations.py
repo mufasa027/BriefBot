@@ -4,7 +4,7 @@ import sqlite3
 from pathlib import Path
 from sqlalchemy import create_engine
 from database.models import Base
-from config import BASE_DIR, DATABASE_NAME
+from settings import BASE_DIR, DATABASE_NAME
 
 def create_database():
     """

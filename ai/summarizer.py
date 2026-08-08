@@ -1,5 +1,5 @@
 from openai import OpenAI
-from config import OPENROUTER_API_KEY
+from settings import OPENROUTER_API_KEY
 import json
 import re
 

@@ -3,7 +3,7 @@ import json
 import uuid
 from services.logging_service import log_event
 
-from config import BASE_DIR
+from settings import BASE_DIR
 
 BASE_DATA_DIR = os.path.join(BASE_DIR, "data")
 ARTICLES_DIR = os.path.join(BASE_DATA_DIR, "articles")

@@ -1,5 +1,5 @@
 import sqlite3
-from config import DATABASE_NAME
+from settings import DATABASE_NAME
 from collectors.manager import fetch_all_news
 from database.crud import save_articles
 

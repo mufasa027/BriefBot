@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from pathlib import Path
-from config import DATABASE_NAME
+from settings import DATABASE_NAME
 
 # Convert to an absolute POSIX path (forward slashes) which is required for 
 # a robust SQLAlchemy SQLite URI across both Windows and Linux.

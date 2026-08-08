@@ -25,7 +25,7 @@ COLORS = {
 }
 
 import os
-from config import BASE_DIR
+from settings import BASE_DIR
 
 # TrueType Font Paths
 FONTS = {
@@ -157,4 +157,4 @@ HANDLE = {
     "x": FOOTER_CONFIG["logo_x"] + FOOTER_CONFIG["logo_size"] + FOOTER_CONFIG["handle_offset_x"],
     "y": FOOTER_CONFIG["logo_y"] + FOOTER_CONFIG["handle_offset_y"],
     "font_size": FOOTER_CONFIG["handle_font_size"],
-}
+}

@@ -51,7 +51,7 @@ stories = load_story_data()
 st.sidebar.title("⚡ CipherBrief Control Panel")
 
 if st.sidebar.button("📥 Fetch & Process Latest News", use_container_width=True):
-    from config import OPENROUTER_API_KEY
+    from settings import OPENROUTER_API_KEY
     if not OPENROUTER_API_KEY:
         st.sidebar.error("❌ OPENROUTER_API_KEY is not set in Streamlit Secrets!")
     else:

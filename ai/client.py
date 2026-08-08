@@ -1,7 +1,7 @@
 import os
 from typing import Optional
 from openai import OpenAI
-from config import OPENROUTER_API_KEY
+from settings import OPENROUTER_API_KEY
 
 def get_ai_client() -> Optional[OpenAI]:
     api_key = OPENROUTER_API_KEY or os.getenv("OPENAI_API_KEY")
