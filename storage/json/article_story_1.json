@@ -72,6 +72,6 @@
   "queued_time": null,
   "publishing_time": null,
   "published_time": null,
-  "publish_error": "GitHub sync failed: GitHub upload failed (404) for repo 'mufaasa027/BriefBot', path 'storage/videos/post_story_1.mp4': {\"message\":\"Not Found\",\"documentation_url\":\"https://docs.github.com/rest/repos/contents#create-or-up",
+  "publish_error": "Instagram publish failed: Failed to create Instagram Reels container: {\"error\":{\"message\":\"Invalid OAuth access token - Cannot parse access token\",\"type\":\"OAuthException\",\"code\":190,\"fbtrace_id\":\"Axl3O2bu28XYqiXYHX1g6fJ\"}}",
   "last_publish_attempt": null
 }
