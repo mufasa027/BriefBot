@@ -452,11 +452,11 @@ with tab_queue:
                 if sq.status == "published":
                     qc3.caption(f"Published: {sq.posted_time}")
                 elif sq.status == "failed":
-                    qc3.caption(f"Failed: {sq.rejected_time or sq.latest_update}")
+                    qc3.caption(f"Failed: {getattr(sq, 'rejected_time', None) or sq.latest_update}")
                     if getattr(sq, "publish_error", None):
                         st.error(sq.publish_error)
                 else:
-                    qc3.caption(f"Approved: {sq.approved_time or sq.latest_update}")
+                    qc3.caption(f"Approved: {getattr(sq, 'approved_time', None) or sq.latest_update}")
 
 
 with tab_analytics:
