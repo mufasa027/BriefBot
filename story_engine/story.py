@@ -91,6 +91,10 @@ class Story:
             "articles": self.articles,
             "entities": self.entities,
             "status": self.status,
+            "rendered_image_path": getattr(self, "rendered_image_path", None),
+            "caption": getattr(self, "caption", None),
+            "hashtags": getattr(self, "hashtags", None),
+            "generated_time": getattr(self, "generated_time", None),
         }
 
     @classmethod
