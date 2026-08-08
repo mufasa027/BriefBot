@@ -4,18 +4,21 @@ import base64
 import requests
 
 
-GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-GITHUB_REPO = os.getenv("GITHUB_REPO", "").replace(".git", "").strip() if os.getenv("GITHUB_REPO") else None
-GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "").strip()
+def get_github_env():
+    token = os.getenv("GITHUB_TOKEN")
+    repo = os.getenv("GITHUB_REPO", "").replace(".git", "").strip() if os.getenv("GITHUB_REPO") else None
+    branch = os.getenv("GITHUB_BRANCH", "").strip()
+    return token, repo, branch
 
 
 def get_raw_github_url(repo_file_path):
     """
     Returns the public raw.githubusercontent.com URL for a given repository path.
     """
-    if not GITHUB_REPO:
+    _, repo, branch = get_github_env()
+    if not repo:
         return None
-    return f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}/{repo_file_path}"
+    return f"https://raw.githubusercontent.com/{repo}/{branch}/{repo_file_path}"
 
 
 def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
@@ -23,16 +26,18 @@ def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
     Uploads or updates a file in GitHub repository using GitHub REST API.
     Remains 100% FREE using standard GitHub Personal Access Tokens.
     """
-    if not GITHUB_TOKEN or not GITHUB_REPO:
+    token, repo, branch = get_github_env()
+    
+    if not token or not repo:
         err = f"GitHub Storage sync skipped (GITHUB_TOKEN or GITHUB_REPO not set). Saved locally to {repo_file_path}"
         print(f"[Notice] {err}")
         return False, err
 
     import urllib.parse
     safe_path = urllib.parse.quote(repo_file_path)
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{safe_path}"
+    url = f"https://api.github.com/repos/{repo}/contents/{safe_path}"
     headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
+        "Authorization": f"Bearer {token}",
         "Accept": "application/vnd.github.v3+json"
     }
 
@@ -48,8 +53,8 @@ def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
         "message": commit_message,
         "content": encoded_content
     }
-    if GITHUB_BRANCH:
-        payload["branch"] = GITHUB_BRANCH
+    if branch:
+        payload["branch"] = branch
     if sha:
         payload["sha"] = sha
 
@@ -58,7 +63,7 @@ def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
         print(f"[OK] Synced to GitHub Storage: {repo_file_path}")
         return True, None
     else:
-        err = f"GitHub upload failed (404) for repo '{GITHUB_REPO}', path '{safe_path}': {r_put.text[:100]}" if r_put.status_code == 404 else f"GitHub upload failed ({r_put.status_code}): {r_put.text[:100]}"
+        err = f"GitHub upload failed (404) for repo '{repo}', path '{safe_path}': {r_put.text[:100]}" if r_put.status_code == 404 else f"GitHub upload failed ({r_put.status_code}): {r_put.text[:100]}"
         print(f"[Error] {err}")
         return False, err
 
