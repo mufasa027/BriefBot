@@ -5,8 +5,8 @@ import requests
 
 
 GITHUB_TOKEN = os.getenv("GITHUB_TOKEN")
-GITHUB_REPO = os.getenv("GITHUB_REPO")  # e.g., "mufasa027/BriefBot" or "user/repo"
-GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "main")
+GITHUB_REPO = os.getenv("GITHUB_REPO", "").replace(".git", "").strip() if os.getenv("GITHUB_REPO") else None
+GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "").strip()
 
 
 def get_raw_github_url(repo_file_path):
@@ -28,7 +28,9 @@ def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
         print(f"[Notice] {err}")
         return False, err
 
-    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{repo_file_path}"
+    import urllib.parse
+    safe_path = urllib.parse.quote(repo_file_path)
+    url = f"https://api.github.com/repos/{GITHUB_REPO}/contents/{safe_path}"
     headers = {
         "Authorization": f"Bearer {GITHUB_TOKEN}",
         "Accept": "application/vnd.github.v3+json"
@@ -44,9 +46,10 @@ def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
 
     payload = {
         "message": commit_message,
-        "content": encoded_content,
-        "branch": GITHUB_BRANCH
+        "content": encoded_content
     }
+    if GITHUB_BRANCH:
+        payload["branch"] = GITHUB_BRANCH
     if sha:
         payload["sha"] = sha
 
@@ -55,7 +58,7 @@ def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
         print(f"[OK] Synced to GitHub Storage: {repo_file_path}")
         return True, None
     else:
-        err = f"GitHub upload failed ({r_put.status_code}): {r_put.text[:100]}"
+        err = f"GitHub upload failed (404) for repo '{GITHUB_REPO}', path '{safe_path}': {r_put.text[:100]}" if r_put.status_code == 404 else f"GitHub upload failed ({r_put.status_code}): {r_put.text[:100]}"
         print(f"[Error] {err}")
         return False, err
 
