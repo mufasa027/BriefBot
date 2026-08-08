@@ -3,8 +3,8 @@ import time
 import requests
 
 
-INSTAGRAM_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID")
-INSTAGRAM_ACCESS_TOKEN = os.getenv("INSTAGRAM_ACCESS_TOKEN")
+def get_instagram_env():
+    return os.getenv("INSTAGRAM_ACCOUNT_ID"), os.getenv("INSTAGRAM_ACCESS_TOKEN")
 GRAPH_API_VERSION = "v19.0"
 
 
@@ -20,19 +20,21 @@ def publish_reel_to_instagram(video_public_url, caption_text):
         print("[Notice] TEST MODE: Bypassing actual Instagram Reels publishing.")
         return "test_mock_ig_reel_id_9999", None
 
-    if not INSTAGRAM_ACCOUNT_ID or not INSTAGRAM_ACCESS_TOKEN:
+    account_id, access_token = get_instagram_env()
+    
+    if not account_id or not access_token:
         err = "Instagram Graph API skipped (Credentials missing)."
         print(f"[Error] {err}")
         return None, err
 
-    base_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{INSTAGRAM_ACCOUNT_ID}"
+    base_url = f"https://graph.facebook.com/{GRAPH_API_VERSION}/{account_id}"
 
     # Step A: Create Media Container
     container_payload = {
         "media_type": "REELS",
         "video_url": video_public_url,
         "caption": caption_text,
-        "access_token": INSTAGRAM_ACCESS_TOKEN
+        "access_token": access_token
     }
     r_container = requests.post(f"{base_url}/media", data=container_payload)
     if r_container.status_code != 200:
@@ -49,7 +51,7 @@ def publish_reel_to_instagram(video_public_url, caption_text):
         time.sleep(5)
         r_status = requests.get(
             f"https://graph.facebook.com/{GRAPH_API_VERSION}/{creation_id}",
-            params={"fields": "status_code", "access_token": INSTAGRAM_ACCESS_TOKEN}
+            params={"fields": "status_code", "access_token": access_token}
         )
         if r_status.status_code == 200:
             status_code = r_status.json().get("status_code")
@@ -74,7 +76,7 @@ def publish_reel_to_instagram(video_public_url, caption_text):
     # Step C: Publish Container
     publish_payload = {
         "creation_id": creation_id,
-        "access_token": INSTAGRAM_ACCESS_TOKEN
+        "access_token": access_token
     }
     r_publish = requests.post(f"{base_url}/media_publish", data=publish_payload)
 
