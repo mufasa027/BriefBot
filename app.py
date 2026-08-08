@@ -204,6 +204,8 @@ with tab_newsroom:
                 with header_col2:
                     st.markdown(f"### 🔥 **{story.overall_story_score}**/100")
                     st.caption(f"Status: `{current_status.upper()}`")
+                    if current_status == "failed" and getattr(story, "publish_error", None):
+                        st.error(story.publish_error)
 
                 # Feature 1 & 2: Editorial Review Panel & Explainability
                 with st.expander(f"🔍 Editorial Review Panel (View Details & AI Analysis)"):
@@ -403,6 +405,8 @@ with tab_queue:
                     qc3.caption(f"Published: {sq.posted_time}")
                 elif sq.status == "failed":
                     qc3.caption(f"Failed: {sq.rejected_time or sq.latest_update}")
+                    if getattr(sq, "publish_error", None):
+                        st.error(sq.publish_error)
                 else:
                     qc3.caption(f"Approved: {sq.approved_time or sq.latest_update}")
 
