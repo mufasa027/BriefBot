@@ -12,6 +12,10 @@ importlib.reload(logging_service)
 from services.storage_service import get_render_path_for_uuid, CAPTIONS_DIR, HASHTAGS_DIR, ARTICLES_DIR
 from database.diagnostics import run_database_diagnostics
 from ai.ranker import generate_score_explanation
+from database.migrations import create_database
+
+# Initialize database to prevent "no such table" errors on first run
+create_database()
 
 st.set_page_config(
     page_title="CipherBrief Newsroom",
