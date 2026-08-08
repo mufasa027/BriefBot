@@ -108,7 +108,7 @@ def get_cropped_face_positions(image_path, target_w, target_h):
     transformed into final canvas coordinates after smart cropping.
     """
     faces = detect_faces(image_path)
-    if not faces:
+    if len(faces) == 0:
         return []
     
     try:
