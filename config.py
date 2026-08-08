@@ -3,7 +3,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-DATABASE_NAME = os.getenv("DATABASE_NAME", os.path.join("data", "briefbot.db"))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+DATABASE_NAME = os.getenv("DATABASE_NAME", os.path.join(BASE_DIR, "data", "briefbot.db"))
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 # Trusted News Sources RSS Feeds
