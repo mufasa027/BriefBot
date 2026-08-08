@@ -99,16 +99,21 @@ def publish_approved_story_as_reel(article):
 
 
 def _fail_publish(article, err_msg):
-    art_id = article.get("id")
-    art_uuid = article.get("uuid")
+    art_id = article.get("story_id") or article.get("id")
+    art_uuid = article.get("story_id") or article.get("uuid")
+    
+    # Actually attach the error to the dictionary so transition_article_status saves it
+    article["publish_error"] = err_msg
+    
     transition_article_status(article, "failed")
     log_event("PUBLISH_FAILED", err_msg, article_uuid=art_uuid, level="ERROR")
     
-    if art_id:
+    # If it's a legacy article, update news table
+    if article.get("id"):
         conn = get_connection()
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE news SET publish_error = ? WHERE id = ?", (err_msg, art_id))
+            cursor.execute("UPDATE news SET publish_error = ? WHERE id = ?", (err_msg, article.get("id")))
             conn.commit()
         finally:
             conn.close()
