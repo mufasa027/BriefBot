@@ -50,7 +50,18 @@ stories = load_story_data()
 # -----------------------
 st.sidebar.title("⚡ CipherBrief Control Panel")
 
-if st.sidebar.button("🔄 Re-Cluster News Stories", use_container_width=True):
+if st.sidebar.button("📥 Fetch & Process Latest News", use_container_width=True):
+    with st.spinner("Fetching and clustering news (this may take a few minutes)..."):
+        try:
+            import main
+            main.main()
+            st.sidebar.success("News fetched successfully!")
+        except Exception as e:
+            st.sidebar.error(f"Error fetching news: {e}")
+        st.cache_data.clear()
+        st.rerun()
+
+if st.sidebar.button("🔄 Refresh View", use_container_width=True):
     st.cache_data.clear()
     st.rerun()
 
