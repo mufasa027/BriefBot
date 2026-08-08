@@ -5,7 +5,7 @@ import os
 
 from database.crud import get_all_stories
 from services.queue_service import handle_generate_story_action, transition_article_status
-from services.publishing_service import publish_queued_article
+from services.publishing_service import publish_approved_story_as_reel
 from services import logging_service
 import importlib
 importlib.reload(logging_service)
@@ -244,7 +244,10 @@ with tab_newsroom:
                         st.markdown("#### 🗄️ Database Records")
                         st.write(f"**Story UUID:** `{story_id}`")
                         st.write(f"**Primary Article ID:** `{story.primary_article_id}`")
-                        
+                        if story.instagram_media_id:
+                            st.write(f"**Instagram Media ID:** `{story.instagram_media_id}`")
+                            st.write(f"**Reel Path:** `{story.reel_video_path}`")
+                            
                         # Feature 7: Audit Log
                         st.markdown("#### 📜 Audit Log Timeline")
                         audit_logs = logging_service.get_audit_log_for_story(story_id)
@@ -330,13 +333,13 @@ with tab_newsroom:
                     st.cache_data.clear()
                     st.rerun()
 
-                # 5. PUBLISH STORY
-                if a5.button("🚀 Publish Story", key=f"pub_s_{story_id}"):
-                    with st.spinner("Publishing story post..."):
-                        success, res_msg = publish_queued_article(s_dict)
+                # 5. PUBLISH STORY (Reels)
+                if a5.button("🚀 Publish Reel", key=f"pub_s_{story_id}", disabled=(current_status != "approved")):
+                    with st.spinner("Generating MP4 & Publishing Reel to Instagram..."):
+                        success, res_msg = publish_approved_story_as_reel(s_dict)
                         if success:
                             st.balloons()
-                            st.success(f"✓ Story Published! ID: {res_msg}")
+                            st.success(f"✓ Published as Reel! IG Media ID: {res_msg}")
                         else:
                             st.error(f"Publish Failed: {res_msg}")
                         st.cache_data.clear()

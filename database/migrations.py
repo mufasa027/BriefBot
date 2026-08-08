@@ -72,6 +72,14 @@ def create_database():
                 ("generated_time", "TEXT"),
                 ("approved_time", "TEXT"),
                 ("rejected_time", "TEXT"),
+                ("instagram_media_id", "TEXT"),
+                ("reel_video_path", "TEXT"),
+                ("publish_attempts", "INTEGER"),
+                ("queued_time", "TEXT"),
+                ("publishing_time", "TEXT"),
+                ("published_time", "TEXT"),
+                ("publish_error", "TEXT"),
+                ("last_publish_attempt", "TEXT"),
             ]
 
             # Migrate news table

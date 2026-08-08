@@ -7,6 +7,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DATABASE_NAME = os.getenv("DATABASE_NAME", os.path.join(BASE_DIR, "data", "briefbot.db"))
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
+# Publishing Configuration
+INSTAGRAM_PUBLISH_MODE = os.getenv("INSTAGRAM_PUBLISH_MODE", "TEST")
+REEL_DURATION_SECONDS = int(os.getenv("REEL_DURATION_SECONDS", "5"))
+
 # Trusted News Sources RSS Feeds
 RSS_FEEDS = {
     "BBC": "https://feeds.bbci.co.uk/news/rss.xml",

@@ -9,6 +9,15 @@ GITHUB_REPO = os.getenv("GITHUB_REPO")  # e.g., "mufasa027/BriefBot" or "user/re
 GITHUB_BRANCH = os.getenv("GITHUB_BRANCH", "main")
 
 
+def get_raw_github_url(repo_file_path):
+    """
+    Returns the public raw.githubusercontent.com URL for a given repository path.
+    """
+    if not GITHUB_REPO:
+        return None
+    return f"https://raw.githubusercontent.com/{GITHUB_REPO}/{GITHUB_BRANCH}/{repo_file_path}"
+
+
 def upload_file_to_github(repo_file_path, file_content_bytes, commit_message):
     """
     Uploads or updates a file in GitHub repository using GitHub REST API.
@@ -66,6 +75,22 @@ def sync_approved_post_to_github(article):
             commit_message=f"storage: Add post PNG image for article #{article_id}"
         )
 
+    # 1.5. Sync Rendered MP4 Video (if exists)
+    mp4_path = image_path.replace(".png", ".mp4") if image_path else None
+    mp4_repo_path = f"storage/videos/post_{article_id}.mp4"
+    mp4_public_url = None
+    
+    if mp4_path and os.path.exists(mp4_path):
+        with open(mp4_path, "rb") as f:
+            video_bytes = f.read()
+        success = upload_file_to_github(
+            repo_file_path=mp4_repo_path,
+            file_content_bytes=video_bytes,
+            commit_message=f"storage: Add post MP4 video for article #{article_id}"
+        )
+        if success:
+            mp4_public_url = get_raw_github_url(mp4_repo_path)
+
     # 2. Sync Metadata JSON
     json_bytes = json.dumps(article, indent=2, default=str).encode("utf-8")
     upload_file_to_github(
@@ -81,3 +106,5 @@ def sync_approved_post_to_github(article):
         file_content_bytes=caption_content.encode("utf-8"),
         commit_message=f"storage: Add caption text for #{article_id}"
     )
+
+    return mp4_public_url
