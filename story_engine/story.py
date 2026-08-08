@@ -22,6 +22,14 @@ class Story:
         overall_story_score=0,
         entities=None,
         status="new",
+        instagram_media_id=None,
+        reel_video_path=None,
+        publish_attempts=0,
+        queued_time=None,
+        publishing_time=None,
+        published_time=None,
+        publish_error=None,
+        last_publish_attempt=None,
     ):
         self.story_id = story_id or str(uuid.uuid4())
         self.story_title = story_title
@@ -41,6 +49,16 @@ class Story:
             "keywords": [],
         }
         self.status = status
+        
+        # Reel Publishing
+        self.instagram_media_id = instagram_media_id
+        self.reel_video_path = reel_video_path
+        self.publish_attempts = publish_attempts
+        self.queued_time = queued_time
+        self.publishing_time = publishing_time
+        self.published_time = published_time
+        self.publish_error = publish_error
+        self.last_publish_attempt = last_publish_attempt
 
     @property
     def num_sources(self):
@@ -95,6 +113,14 @@ class Story:
             "caption": getattr(self, "caption", None),
             "hashtags": getattr(self, "hashtags", None),
             "generated_time": getattr(self, "generated_time", None),
+            "instagram_media_id": self.instagram_media_id,
+            "reel_video_path": self.reel_video_path,
+            "publish_attempts": self.publish_attempts,
+            "queued_time": self.queued_time,
+            "publishing_time": self.publishing_time,
+            "published_time": self.published_time,
+            "publish_error": self.publish_error,
+            "last_publish_attempt": self.last_publish_attempt,
         }
 
     @classmethod
@@ -115,4 +141,12 @@ class Story:
             overall_story_score=data.get("overall_story_score", 0),
             entities=data.get("entities", {}),
             status=data.get("status", "new"),
+            instagram_media_id=data.get("instagram_media_id"),
+            reel_video_path=data.get("reel_video_path"),
+            publish_attempts=data.get("publish_attempts", 0),
+            queued_time=data.get("queued_time"),
+            publishing_time=data.get("publishing_time"),
+            published_time=data.get("published_time"),
+            publish_error=data.get("publish_error"),
+            last_publish_attempt=data.get("last_publish_attempt"),
         )

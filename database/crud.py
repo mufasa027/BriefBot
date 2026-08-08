@@ -225,9 +225,17 @@ def insert_or_update_story(story_obj):
                 caption,
                 hashtags,
                 status,
-                generated_time
+                generated_time,
+                instagram_media_id,
+                reel_video_path,
+                publish_attempts,
+                queued_time,
+                publishing_time,
+                published_time,
+                publish_error,
+                last_publish_attempt
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(story_id) DO UPDATE SET
                 story_title=excluded.story_title,
                 category=excluded.category,
@@ -244,7 +252,15 @@ def insert_or_update_story(story_obj):
                 caption=excluded.caption,
                 hashtags=excluded.hashtags,
                 status=excluded.status,
-                generated_time=excluded.generated_time
+                generated_time=excluded.generated_time,
+                instagram_media_id=excluded.instagram_media_id,
+                reel_video_path=excluded.reel_video_path,
+                publish_attempts=excluded.publish_attempts,
+                queued_time=excluded.queued_time,
+                publishing_time=excluded.publishing_time,
+                published_time=excluded.published_time,
+                publish_error=excluded.publish_error,
+                last_publish_attempt=excluded.last_publish_attempt
             """,
             (
                 story_id,
@@ -264,6 +280,14 @@ def insert_or_update_story(story_obj):
                 s_dict.get("hashtags"),
                 s_dict.get("status", "new"),
                 s_dict.get("generated_time"),
+                s_dict.get("instagram_media_id"),
+                s_dict.get("reel_video_path"),
+                s_dict.get("publish_attempts", 0),
+                s_dict.get("queued_time"),
+                s_dict.get("publishing_time"),
+                s_dict.get("published_time"),
+                s_dict.get("publish_error"),
+                s_dict.get("last_publish_attempt"),
             )
         )
         conn.commit()
@@ -321,6 +345,14 @@ def get_all_stories(status_filter=None, limit=50):
             overall_story_score=r["overall_story_score"],
             entities=entities,
             status=r["status"],
+            instagram_media_id=r.get("instagram_media_id"),
+            reel_video_path=r.get("reel_video_path"),
+            publish_attempts=r.get("publish_attempts", 0),
+            queued_time=r.get("queued_time"),
+            publishing_time=r.get("publishing_time"),
+            published_time=r.get("published_time"),
+            publish_error=r.get("publish_error"),
+            last_publish_attempt=r.get("last_publish_attempt"),
         )
         s_obj.rendered_image_path = r.get("rendered_image_path")
         s_obj.caption = r.get("caption")
