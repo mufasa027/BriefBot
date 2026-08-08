@@ -8,6 +8,7 @@ from services.storage_service import get_render_path_for_uuid, CAPTIONS_DIR, HAS
 from database.diagnostics import run_database_diagnostics
 from ai.ranker import generate_score_explanation
 from database.migrations import create_database
+from services import logging_service
 
 # Initialize database to prevent "no such table" errors on first run
 create_database()
@@ -95,6 +96,8 @@ category = st.sidebar.selectbox("Category", categories)
 
 min_score = st.sidebar.slider("Minimum Story Score", 0, 100, 0, 5)
 
+sort_by = st.sidebar.selectbox("Sort By", ["Latest", "Potential to Boom (Virality)", "Overall Score"])
+
 # -----------------------
 # FILTER LOGIC & SEARCH
 # -----------------------
@@ -119,6 +122,15 @@ if filtered_stories:
         filtered_stories = [s for s in filtered_stories if s.category == category]
 
     filtered_stories = [s for s in filtered_stories if s.overall_story_score >= min_score]
+
+    # Sorting logic
+    if sort_by == "Potential to Boom (Virality)":
+        filtered_stories.sort(key=lambda s: max([a.get('virality_score', 0) for a in s.articles] + [0]) if s.articles else 0, reverse=True)
+    elif sort_by == "Overall Score":
+        filtered_stories.sort(key=lambda s: s.overall_story_score, reverse=True)
+    else:
+        # Latest
+        filtered_stories.sort(key=lambda s: s.first_published or "", reverse=True)
 
 # -----------------------
 # MAIN TABS
@@ -271,15 +283,26 @@ with tab_newsroom:
                         st.markdown("### 📱 Generated Post Preview")
 
                         if has_render:
+                            mp4_path = render_path.replace(".png", ".mp4") if render_path else ""
+                            has_mp4 = os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 1000
+
                             try:
-                                from PIL import Image
-                                img = Image.open(render_path)
-                                st.image(img, use_container_width=True)
+                                if has_mp4:
+                                    with open(mp4_path, "rb") as video_file:
+                                        video_bytes = video_file.read()
+                                    st.video(video_bytes)
+                                    
+                                    st.download_button("⬇️ Download MP4 Post", video_bytes, file_name=f"cipherbrief_post_{story_id}.mp4", mime="video/mp4")
+                                else:
+                                    from PIL import Image
+                                    img = Image.open(render_path)
+                                    st.image(img, use_container_width=True)
+                                    st.warning("⚠️ MP4 video missing, showing static image instead.")
                                 
                                 with open(render_path, "rb") as f:
-                                    st.download_button("⬇️ Download Post Image", f, file_name=f"cipherbrief_post_{story_id}.png", mime="image/png")
+                                    st.download_button("⬇️ Download Static Image", f, file_name=f"cipherbrief_post_{story_id}.png", mime="image/png")
                             except OSError as e:
-                                st.error(f"⚠️ Live Preview Error: Could not render image ({e})")
+                                st.error(f"⚠️ Live Preview Error: Could not render media ({e})")
                         else:
                             st.warning("⚠️ Render PNG missing or invalid.")
 
@@ -338,6 +361,14 @@ with tab_newsroom:
                     e1, e2, e3 = st.columns(3)
                     with e1:
                         if has_render:
+                            mp4_path = render_path.replace(".png", ".mp4") if render_path else ""
+                            has_mp4 = os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 1000
+                            
+                            if has_mp4:
+                                with open(mp4_path, "rb") as video_file:
+                                    video_bytes = video_file.read()
+                                st.download_button("⬇️ Download MP4", video_bytes, file_name=f"cipherbrief_post_{story_id}.mp4", mime="video/mp4", use_container_width=True)
+                            
                             with open(render_path, "rb") as f:
                                 st.download_button("⬇️ Download Image", f, file_name=f"cipherbrief_post_{story_id}.png", mime="image/png", use_container_width=True)
                     with e2:

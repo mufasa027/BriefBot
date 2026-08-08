@@ -68,6 +68,7 @@ def handle_generate_story_action(story_obj):
     from story_engine.editorial import synthesize_story_post_copy
     from services.renderer_service import render_post_for_article
     from services.image_fetcher import fetch_image
+    from services.video_service import generate_static_reel
 
     s_dict = story_obj.to_dict() if hasattr(story_obj, "to_dict") else story_obj
     story_id = s_dict.get("story_id")
@@ -112,6 +113,11 @@ def handle_generate_story_action(story_obj):
 
     rendered_path, err = render_post_for_article(primary_art)
     renderer_res = f"OK ({rendered_path})" if (rendered_path and not err) else f"FAILED ({err})"
+    
+    video_path = None
+    if rendered_path and not err:
+        video_path = generate_static_reel(rendered_path, story_id)
+    video_res = f"OK ({video_path})" if video_path else "FAILED"
 
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -163,7 +169,7 @@ def handle_generate_story_action(story_obj):
 
         log_event(
             "STORY_GEN_DIAGNOSTIC",
-            f"DIAGNOSTIC SUMMARY: Story ID={story_id} | Image URL={img_url[:40]} | Download={download_res} | Renderer={renderer_res} | Caption={caption_res} | Hashtag={hashtag_res} | Metadata={metadata_res} | Overall Status=POST_READY | Time Taken={duration}s",
+            f"DIAGNOSTIC SUMMARY: Story ID={story_id} | Image URL={img_url[:40]} | Download={download_res} | Renderer={renderer_res} | Video={video_res} | Caption={caption_res} | Hashtag={hashtag_res} | Metadata={metadata_res} | Overall Status=POST_READY | Time Taken={duration}s",
             article_uuid=story_id
         )
         return s_dict, None
@@ -204,7 +210,7 @@ def handle_generate_story_action(story_obj):
         
         log_event(
             "STORY_GEN_DIAGNOSTIC",
-            f"DIAGNOSTIC SUMMARY: Story ID={story_id} | Image URL={img_url[:40]} | Download={download_res} | Renderer={renderer_res} | Caption={caption_res} | Hashtag={hashtag_res} | Metadata={metadata_res} | Overall Status=REVERTED_TO_NEW | Error={error_msg} | Time Taken={duration}s",
+            f"DIAGNOSTIC SUMMARY: Story ID={story_id} | Image URL={img_url[:40]} | Download={download_res} | Renderer={renderer_res} | Video={video_res} | Caption={caption_res} | Hashtag={hashtag_res} | Metadata={metadata_res} | Overall Status=REVERTED_TO_NEW | Error={error_msg} | Time Taken={duration}s",
             article_uuid=story_id,
             level="ERROR"
         )
