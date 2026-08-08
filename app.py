@@ -139,6 +139,7 @@ with tab_newsroom:
     m2.metric("Posts Ready", posts_ready_count)
     m3.metric("Approved Posts", approved_count)
     m4.metric("Rejected Stories", rejected_count)
+    avg_score = f"{sum(s.overall_story_score for s in filtered_stories) / max(1, len(filtered_stories)):.1f}"
     m5.metric("Avg Story Score", avg_score)
 
     st.divider()
