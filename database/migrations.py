@@ -9,6 +9,10 @@ def create_database():
     Creates database tables if missing and safely migrates new columns to existing tables.
     Uses DATABASE_NAME from config to ensure migration targets the correct database file.
     """
+    # Ensure the parent directory exists (critical for Streamlit Cloud deployment)
+    import os
+    os.makedirs(os.path.dirname(DATABASE_NAME), exist_ok=True)
+
     Base.metadata.create_all(bind=engine)
 
     # C-02 FIX: Use DATABASE_NAME from config instead of hardcoded "briefbot.db"
