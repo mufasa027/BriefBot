@@ -67,7 +67,7 @@ def sync_approved_post_to_github(article):
     """
     Commits approved post PNG image, JSON metadata, and caption text file to GitHub.
     """
-    article_id = article.get("id") or article.get("title", "")[:20].replace(" ", "_")
+    article_id = article.get("story_id") or article.get("id") or article.get("story_title", article.get("title", ""))[:20].replace(" ", "_")
     image_path = article.get("rendered_image_path")
 
     # 1. Sync Rendered PNG Image
