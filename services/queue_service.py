@@ -178,6 +178,8 @@ def handle_generate_story_action(story_obj):
         insert_or_update_story(story_obj)
 
         error_msg = f"Transactional validation failed. Missing required assets: {', '.join(missing_assets)}"
+        if err:
+            error_msg += f" | Renderer Error: {err}"
         
         # Construct and log comprehensive diagnostics on failure
         diag_log = (
