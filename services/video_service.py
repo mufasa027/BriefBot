@@ -2,6 +2,7 @@ import os
 import subprocess
 from settings import BASE_DIR
 from services.logging_service import log_event
+from services.audio_manager import get_next_audio_track
 
 REEL_DURATION_SECONDS = 10
 
@@ -17,19 +18,39 @@ def generate_static_reel(png_path, article_uuid):
 
     # Derive output MP4 path from the PNG path
     mp4_path = png_path.replace(".png", ".mp4")
+    # Get audio track
+    audio_path = get_next_audio_track(article_uuid)
     
-    # FFmpeg command to loop a single image for REEL_DURATION_SECONDS
-    cmd = [
-        "ffmpeg",
-        "-y",               # Overwrite output files without asking
-        "-loop", "1",       # Loop the single image
-        "-i", png_path,     # Input image
-        "-c:v", "libx264",  # Video codec
-        "-t", str(REEL_DURATION_SECONDS), # Duration
-        "-pix_fmt", "yuv420p", # Pixel format (highly recommended for social media compatibility)
-        "-vf", "scale=1080:1920", # Ensure exact dimensions just in case
-        mp4_path
-    ]
+    if audio_path:
+        # FFmpeg command with audio
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-loop", "1",
+            "-i", png_path,
+            "-i", audio_path,
+            "-c:v", "libx264",
+            "-c:a", "aac",
+            "-b:a", "192k",
+            "-pix_fmt", "yuv420p",
+            "-vf", "scale=1080:1920",
+            "-t", str(REEL_DURATION_SECONDS),
+            "-shortest",  # Fallback just in case audio is less than 10s
+            mp4_path
+        ]
+    else:
+        # FFmpeg command without audio (silent)
+        cmd = [
+            "ffmpeg",
+            "-y",
+            "-loop", "1",
+            "-i", png_path,
+            "-c:v", "libx264",
+            "-t", str(REEL_DURATION_SECONDS),
+            "-pix_fmt", "yuv420p",
+            "-vf", "scale=1080:1920",
+            mp4_path
+        ]
 
     try:
         log_event("VIDEO_GEN_START", f"Starting FFmpeg MP4 generation for {REEL_DURATION_SECONDS}s", article_uuid=article_uuid)
