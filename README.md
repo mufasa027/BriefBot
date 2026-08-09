@@ -18,6 +18,7 @@ CipherBrief is a robust data pipeline and dashboard that autonomously ingests gl
 - **🧠 AI-Powered Synthesis:** Integrated the OpenRouter LLM API to automatically cluster related stories, filter out noise, and synthesize multi-source reporting into concise, authoritative summaries.
 - **⚖️ Algorithmic Scoring Engine:** Built a custom ranking algorithm that scores stories based on *importance, virality, freshness, and growth potential* to prioritize what gets published.
 - **🎨 Dynamic Asset Generation:** Programmed a custom rendering engine using `Pillow (PIL)` and `FFmpeg` to dynamically composite high-resolution news photos, text, and cinematic gradients into pixel-perfect static images and 10-second MP4 video reels.
+- **🎵 Audio Memory Manager:** Engineered an intelligent audio rotation system that dynamically mixes background music into generated video reels, keeping a historical state log to ensure tracks do not repeat for at least 12 cycles.
 - **📊 Streamlit Control Panel:** Designed a responsive, state-managed dashboard using **Streamlit**, allowing human editors to review AI-generated posts, audit logs, and approve/reject content with a single click.
 
 ---
@@ -88,6 +89,9 @@ python main.py
 ```bash
 streamlit run app.py
 ```
+
+### 6. (Optional) Enable Video Reels Audio
+Drop royalty-free `.mp3` tracks into the `assets/audio/` directory. The engine will automatically detect them and mix them into your synthesized 10-second MP4 reels!
 
 ---
 
