@@ -102,6 +102,9 @@ def download_valid_image(url, target_path, timeout=8):
         diag["image_width"] = img.width
         diag["image_height"] = img.height
         
+        if img.width < 100 or img.height < 100:
+            return False, f"Image dimensions too small ({img.width}x{img.height})", diag
+        
         # Re-open and save validated image
         img = Image.open(io.BytesIO(content_bytes)).convert("RGB")
         img.save(target_path, quality=90)

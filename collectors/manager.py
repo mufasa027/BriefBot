@@ -21,6 +21,12 @@ def _clean_text(text, source_name):
     soup = BeautifulSoup(str(text), "html.parser")
     text = soup.get_text(separator=" ").strip()
     
+    # Remove markdown links [text](url) -> text
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    # Remove raw http links
+    text = re.sub(r'https?://\S+', '', text)
+
+    
     # Strip common publisher suffixes from titles (e.g. " | Hindustan Times" or " - NDTV")
     text = re.sub(r'\s*[|\-]\s*' + re.escape(source_name) + r'.*?$', '', text, flags=re.IGNORECASE)
     text = re.sub(r'\s*[|\-]\s*India News.*?$', '', text, flags=re.IGNORECASE)

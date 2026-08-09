@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 import pandas as pd
 import math
 import os
@@ -17,7 +18,6 @@ create_database()
 
 st.set_page_config(
     page_title="CipherBrief Newsroom",
-    page_icon="📰",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -31,8 +31,8 @@ st.markdown("""
 
     /* CSS Variables for Premium Dark Theme */
     :root {
-        --bg-main: #080A0D;
-        --bg-surface: #101318;
+        --bg-main: #0B0E14;
+        --bg-surface: #151A22;
         --bg-secondary: #151922;
         --border-color: #242933;
         --text-primary: #F5F7FA;
@@ -228,14 +228,14 @@ with st.sidebar:
     
     # Custom Navigation
     page_options = {
-        "Overview": "📊",
-        "All Stories": "📰",
-        "Post Ready": "🎨",
-        "Approved": "✅"
+        "Overview": "",
+        "All Stories": "",
+        "Post Ready": "",
+        "Approved": ""
     }
     
     for page, icon in page_options.items():
-        if st.button(f"{icon} {page}", key=f"nav_{page}", use_container_width=True, type="primary" if st.session_state.active_page == page else "secondary"):
+        if st.button(f"{page}", key=f"nav_{page}", use_container_width=True, type="primary" if st.session_state.active_page == page else "secondary"):
             st.session_state.active_page = page
             st.session_state.selected_story_id = None
             st.rerun()
@@ -243,10 +243,10 @@ with st.sidebar:
     st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
     
     st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
-    if st.button("📥 Fetch & Process Latest", use_container_width=True):
+    if st.button("Fetch & Process Latest", use_container_width=True):
         from settings import OPENROUTER_API_KEY
         if not OPENROUTER_API_KEY:
-            st.error("❌ OPENROUTER_API_KEY is not set!")
+            st.error("Error: OPENROUTER_API_KEY is not set.")
         else:
             with st.status("Fetching and clustering news...", expanded=True) as status:
                 try:
@@ -455,7 +455,7 @@ def render_story_detail(story):
         col_a1, col_a2, col_a3, col_a4 = st.columns(4)
         
         with col_a1:
-            if st.button("⚡ Synthesize", disabled=(current_status in ["approved", "rejected"]), use_container_width=True):
+            if st.button("Synthesize", disabled=(current_status in ["approved", "rejected"]), use_container_width=True):
                 with st.status("Synthesizing Post...", expanded=True) as status:
                     st.write("Analyzing story metrics...")
                     st.write("Generating editorial copy...")
@@ -471,13 +471,13 @@ def render_story_detail(story):
                         st.rerun()
                         
         with col_a2:
-            if st.button("✅ Approve", disabled=(current_status != "post_ready" or not has_render), use_container_width=True):
+            if st.button("Approve", disabled=(current_status != "post_ready" or not has_render), use_container_width=True):
                 transition_article_status(s_dict, "approved")
                 st.cache_data.clear()
                 st.rerun()
                 
         with col_a3:
-            if st.button("❌ Reject", disabled=(current_status not in ["new", "post_ready"]), use_container_width=True):
+            if st.button("Reject", disabled=(current_status not in ["new", "post_ready"]), use_container_width=True):
                 transition_article_status(s_dict, "rejected")
                 st.cache_data.clear()
                 st.session_state.selected_story_id = None
@@ -486,7 +486,13 @@ def render_story_detail(story):
         with col_a4:
             if has_render:
                 with open(render_path, "rb") as f:
-                    st.download_button("⬇️ Download Image", f, file_name=f"cipherbrief_{story_id}.png", mime="image/png", use_container_width=True)
+                    st.download_button("Download Image", f, file_name=f"cipherbrief_{story_id}.png", mime="image/png", use_container_width=True)
+                
+                mp4_path = render_path.replace(".png", ".mp4")
+                if os.path.exists(mp4_path):
+                    with open(mp4_path, "rb") as f2:
+                        st.download_button("Download MP4 Reel", f2, file_name=f"cipherbrief_{story_id}.mp4", mime="video/mp4", use_container_width=True)
+
 
 
 # ==========================================
@@ -505,8 +511,31 @@ if st.session_state.selected_story_id:
 
 else:
     if st.session_state.active_page == "Overview":
-        st.markdown("<h2 style='font-size:28px; font-weight:600; margin-bottom:4px;'>Good afternoon</h2>", unsafe_allow_html=True)
-        st.markdown("<div style='color:var(--text-secondary); margin-bottom:32px;'>Editorial Desk Overview</div>", unsafe_allow_html=True)
+        components.html("""
+<div id="ist-clock-container" style="margin-bottom:32px; font-family: 'Inter', sans-serif;">
+    <h2 id="ist-clock-time" style="font-size:32px; font-weight:700; color:#F5F7FA; margin-bottom:4px; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 0;">--:--:--</h2>
+    <div id="ist-clock-date" style="color:#9299A5; text-transform:uppercase; font-size:12px; letter-spacing:1px;">--</div>
+</div>
+<script>
+    function updateClock() {
+        const timeEl = document.getElementById('ist-clock-time');
+        const dateEl = document.getElementById('ist-clock-date');
+        if (!timeEl) return;
+        
+        const now = new Date();
+        const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+        const ist = new Date(utc + (3600000 * 5.5));
+        
+        const timeStr = ist.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const dateStr = ist.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) + " (IST)";
+        
+        timeEl.innerText = timeStr;
+        dateEl.innerText = dateStr;
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+</script>
+""", height=100)
         
         m1, m2, m3, m4 = st.columns(4)
         active_count = len([s for s in stories if s.status not in ["rejected"]])
