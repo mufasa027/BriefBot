@@ -169,7 +169,7 @@ def handle_generate_story_action(story_obj):
 
         log_event(
             "STORY_GEN_DIAGNOSTIC",
-            f"DIAGNOSTIC SUMMARY: Story ID={story_id} | Image URL={img_url[:40]} | Download={download_res} | Renderer={renderer_res} | Video={video_res} | Caption={caption_res} | Hashtag={hashtag_res} | Metadata={metadata_res} | Overall Status=POST_READY | Time Taken={duration}s",
+            f"DIAGNOSTIC SUMMARY: Story ID={story_id} | Image URL={str(img_url)[:40]} | Download={download_res} | Renderer={renderer_res} | Video={video_res} | Caption={caption_res} | Hashtag={hashtag_res} | Metadata={metadata_res} | Overall Status=POST_READY | Time Taken={duration}s",
             article_uuid=story_id
         )
         return s_dict, None
