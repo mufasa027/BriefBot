@@ -6,7 +6,7 @@ from collectors.rss.dw import fetch_dw_news
 from collectors.rss.cnn import fetch_cnn_news
 from collectors.rss.npr import fetch_npr_news
 from collectors.rss.guardian import fetch_guardian_news
-from collectors.rss.hindustantimes import fetch_hindustantimes_news
+from collectors.rss.thehindu import fetch_thehindu_news
 from collectors.rss.ndtv import fetch_ndtv_news
 from collectors.rss.timesofindia import fetch_timesofindia_news
 from collectors.rss.moscowtimes import fetch_moscowtimes_news
@@ -37,7 +37,7 @@ def _clean_text(text, source_name):
 def fetch_all_news():
     """
     Orchestrates ingestion across all trusted news sources:
-    BBC, Reuters, AP, DW, Al Jazeera, CNN, NPR, Guardian, Hindustan Times, NDTV, Times of India, The Moscow Times.
+    BBC, Reuters, AP, DW, Al Jazeera, CNN, NPR, Guardian, The Hindu, NDTV, Times of India, The Moscow Times.
     Returns a unified list of article dicts.
     """
     articles = []
@@ -51,7 +51,7 @@ def fetch_all_news():
         ("CNN", fetch_cnn_news),
         ("NPR", fetch_npr_news),
         ("Guardian", fetch_guardian_news),
-        ("Hindustan Times", fetch_hindustantimes_news),
+        ("The Hindu", fetch_thehindu_news),
         ("NDTV", fetch_ndtv_news),
         ("Times of India", fetch_timesofindia_news),
         ("The Moscow Times", fetch_moscowtimes_news),

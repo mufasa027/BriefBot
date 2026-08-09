@@ -62,8 +62,8 @@ def process_and_generate_article(article: dict) -> dict:
             clean_json = re.sub(r"```json|```", "", raw).strip()
             data = json.loads(clean_json)
 
-            improved_headline = data.get("improved_headline", title)
-            summary = data.get("summary", orig_summary)
+            improved_headline = re.sub(r'<[^>]+>', '', data.get("improved_headline", title))
+            summary = re.sub(r'<[^>]+>', '', data.get("summary", orig_summary))
             caption = data.get("caption", caption)
             hashtags = data.get("hashtags", hashtags)
             log_event("AI_GENERATE", "Successfully generated AI headline, summary, caption & hashtags", article_uuid=art_uuid)

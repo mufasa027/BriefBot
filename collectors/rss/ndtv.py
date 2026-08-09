@@ -1,7 +1,7 @@
 from collectors.rss.utils import extract_image_url
 import feedparser
 
-RSS_URL = "https://news.google.com/rss/search?q=site:ndtv.com"
+RSS_URL = "https://feeds.feedburner.com/ndtvnews-top-stories"
 
 def fetch_ndtv_news():
     feed = feedparser.parse(RSS_URL)

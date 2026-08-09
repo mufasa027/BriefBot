@@ -208,15 +208,21 @@ if 'selected_story_id' not in st.session_state:
 # ==========================================
 # 4. TOP HEADER
 # ==========================================
-st.markdown("""
-<div class="app-header">
-    <div>
-        <h1 class="app-title">CIPHERBRIEF</h1>
-        <div class="app-subtitle">News Intelligence / Editorial Desk</div>
+hdr_col1, hdr_col2 = st.columns([1, 15])
+with hdr_col1:
+    if os.path.exists("assets/logo.png"):
+        st.image("assets/logo.png", width=64)
+with hdr_col2:
+    st.markdown("""
+    <div class="app-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
+        <div>
+            <h1 class="app-title">CIPHERBRIEF</h1>
+            <div class="app-subtitle">News Intelligence / Editorial Desk</div>
+        </div>
+        <div class="system-status">● ALL SYSTEMS OPERATIONAL</div>
     </div>
-    <div class="system-status">● ALL SYSTEMS OPERATIONAL</div>
-</div>
-""", unsafe_allow_html=True)
+    """, unsafe_allow_html=True)
+st.markdown("<hr style='border-color: var(--border-color); margin-top: 16px; margin-bottom: 24px;'>", unsafe_allow_html=True)
 
 
 # ==========================================
@@ -268,15 +274,19 @@ with st.sidebar:
     st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
     
     st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Filters</h3>", unsafe_allow_html=True)
-    search = st.text_input("Search", placeholder="Search stories...")
     
-    categories = ["All"] + sorted(list(set([s.category for s in stories if s.category]))) if stories else ["All"]
-    category = st.selectbox("Category", categories)
-    
-    sources_list = ["All"] + sorted(list(set([s.primary_source for s in stories if s.primary_source]))) if stories else ["All"]
-    source_filter = st.selectbox("Source", sources_list)
-    
-    min_score = st.slider("Min Score", 0, 100, 0, 5)
+    with st.form("filter_form"):
+        search = st.text_input("Search", placeholder="Search stories...")
+        
+        categories = ["All"] + sorted(list(set([s.category for s in stories if s.category]))) if stories else ["All"]
+        category = st.selectbox("Category", categories)
+        
+        sources_list = ["All"] + sorted(list(set([s.primary_source for s in stories if s.primary_source]))) if stories else ["All"]
+        source_filter = st.selectbox("Source", sources_list)
+        
+        min_score = st.slider("Min Score", 0, 100, 0, 5)
+        
+        st.form_submit_button("Apply Filters", use_container_width=True)
     
     st.markdown("<br><br>", unsafe_allow_html=True)
     with st.expander("System Diagnostics"):
@@ -310,8 +320,20 @@ if filtered_stories:
         filtered_stories = [s for s in filtered_stories if s.primary_source == source_filter]
     filtered_stories = [s for s in filtered_stories if s.overall_story_score >= min_score]
     
-    # Default Sort by Latest
-    filtered_stories.sort(key=lambda s: s.first_published or "", reverse=True)
+    # Sort
+    sort_by = st.selectbox("Sort By", ["Latest", "Score: High to Low", "Score: Low to High"])
+    if sort_by == "Latest":
+        def get_ts(s):
+            try:
+                from email.utils import parsedate_to_datetime
+                return parsedate_to_datetime(s.first_published).timestamp()
+            except:
+                return 0
+        filtered_stories = sorted(filtered_stories, key=get_ts, reverse=True)
+    elif sort_by == "Score: High to Low":
+        filtered_stories = sorted(filtered_stories, key=lambda s: s.overall_story_score, reverse=True)
+    elif sort_by == "Score: Low to High":
+        filtered_stories = sorted(filtered_stories, key=lambda s: s.overall_story_score)
 
 
 # ==========================================
@@ -454,7 +476,8 @@ def render_story_detail(story):
         col_a1, col_a2, col_a3, col_a4 = st.columns(4)
         
         with col_a1:
-            if st.button("Synthesize", disabled=(current_status in ["approved", "rejected"]), use_container_width=True):
+            btn_label = "Re-synthesize" if has_render else "Synthesize"
+            if st.button(btn_label, key=f"synth_btn_{story_id}_{has_render}", disabled=(current_status in ["approved", "rejected"]), use_container_width=True):
                 with st.status("Synthesizing Post...", expanded=True) as status:
                     st.write("Analyzing story metrics...")
                     st.write("Generating editorial copy...")
@@ -549,10 +572,10 @@ else:
         
         st.markdown("<br><h3 style='font-size:20px; font-weight:600; margin-bottom:16px;'>Top Stories</h3>", unsafe_allow_html=True)
         
-        # Show top 6 stories sorted by score
-        top_stories = sorted(stories, key=lambda s: s.overall_story_score, reverse=True)[:6]
+        # Show top 6 stories sorted by score from the filtered subset
+        top_stories = sorted(filtered_stories, key=lambda s: s.overall_story_score, reverse=True)[:6]
         if not top_stories:
-            st.info("NO STORIES YET. Your editorial pipeline is waiting for the next news cycle.")
+            st.info("NO STORIES YET. Adjust your filters or wait for the next news cycle.")
         else:
             r1, r2 = st.columns(2)
             for i, story in enumerate(top_stories):

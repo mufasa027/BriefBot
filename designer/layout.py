@@ -106,6 +106,8 @@ class LayoutEngine:
 
         # Fit summary text words within available_summary_h
         raw_summary = article.get("summary", "").strip()
+        import re
+        raw_summary = re.sub(r'<[^>]+>', '', raw_summary)
         words = raw_summary.split()
 
         fitted_lines = []

@@ -85,12 +85,10 @@ def format_exact_10_hashtags(hashtags_raw: str, category: str = "News", entities
     # Ensure 6 article-specific tags
     default_article_pool = [
         f"#{category.replace(' ', '')}",
-        "#BreakingNews",
-        "#WorldEvents",
-        "#TopStories",
-        "#InternationalNews",
-        "#Headlines",
-        "#GlobalUpdate",
+        "#NewsAlert",
+        "#Report",
+        "#DailyBrief",
+        "#Update",
     ]
 
     for fallback in default_article_pool:
@@ -133,14 +131,18 @@ Requirements:
   - use exactly @cipherbrief when referring to the account
   - never invent another account handle
   - do not make the caption simply repeat the headline
-- hashtags: Generate 10-12 relevant hashtags. Minimum 6 story-specific and 4 general/growth hashtags.
+- hashtags: Generate 10-12 HIGHLY-SPECIFIC hashtags. 
+  HASHTAG RULES:
+  - You MUST include at least 6 ultra-specific tags based on the core entities of the story (e.g. specific people, cities, companies, or exact event names).
+  - DO NOT generate generic tags like #WorldNews or #BreakingNews for these 6.
+  - Then add 4 general/growth hashtags.
 
 Return ONLY valid JSON:
 {
     "improved_headline": "...",
     "summary": "...",
     "caption": "...",
-    "hashtags": "#Tag1 #Tag2 #Tag3 #Tag4 #Tag5 #Tag6 #CipherBrief #WorldNews #GlobalNews #Breaking"
+    "hashtags": "#SpecificPerson #SpecificCity #SpecificEvent #Entity #Company #Context #CipherBrief #WorldNews #GlobalNews #Breaking"
 }
 """
 
