@@ -10,17 +10,17 @@ def main():
     start = time.time()
 
     print("=" * 60)
-    print("📰 BriefBot AI News Pipeline")
+    print("BriefBot AI News Pipeline")
     print("=" * 60)
 
     print("\nCreating database...")
     create_database()
-    print("✓ Database Ready\n")
+    print("OK Database Ready\n")
 
     print("Collecting news...")
     articles = fetch_all_news()
 
-    print(f"✓ Collected {len(articles)} articles.\n")
+    print(f"OK Collected {len(articles)} articles.\n")
 
     successful = 0
     failed = 0
@@ -37,7 +37,7 @@ def main():
             successful += 1
 
             print(
-                f"   ✓ {article['category']} | "
+                f"   OK {article['category']} | "
                 f"{article['importance']}/10 | "
                 f"{article['confidence']}%"
             )
@@ -45,7 +45,7 @@ def main():
         except Exception as e:
 
             failed += 1
-            print(f"   ✗ {e}")
+            print(f"   ERROR {e}")
 
     print("\nSaving articles...")
 
@@ -64,7 +64,7 @@ def main():
     if raw_arts:
         clustered = cluster_articles_into_stories(raw_arts, similarity_threshold=0.45)
         saved_stories = save_stories(clustered)
-        print(f"✓ Clustered {len(clustered)} stories and saved {saved_stories} updates.")
+        print(f"OK Clustered {len(clustered)} stories and saved {saved_stories} updates.")
 
     elapsed = round(time.time() - start, 2)
 

@@ -32,7 +32,7 @@ class Story:
         self.supporting_sources = supporting_sources or []
         self.first_published = first_published or datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.latest_update = latest_update or self.first_published
-        self.overall_story_score = overall_story_score
+        self.overall_story_score = overall_story_score if overall_story_score is not None else 0
         self.entities = entities or {
             "people": [],
             "organizations": [],

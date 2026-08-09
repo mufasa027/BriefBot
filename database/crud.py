@@ -46,10 +46,9 @@ def insert_article(article):
                 final_score,
                 posted,
                 posted_time,
-                instagram_post_id,
                 status
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 article["source"],
@@ -73,7 +72,6 @@ def insert_article(article):
                 article.get("image_url", ""),
                 article.get("final_score", 0),
                 0,
-                None,
                 None,
                 article.get("status", "new"),
             )
