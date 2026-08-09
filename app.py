@@ -53,7 +53,6 @@ st.markdown("""
 
     /* Hide Streamlit Chrome */
     #MainMenu {visibility: hidden;}
-    header {visibility: hidden;}
     footer {visibility: hidden;}
     
     /* Block container adjustments */
