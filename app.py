@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import math
 import os
+import time
 
 from database.crud import get_all_stories
 from services.storage_service import get_render_path_for_uuid, CAPTIONS_DIR, HASHTAGS_DIR, ARTICLES_DIR
@@ -21,430 +22,537 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
+# ==========================================
+# 1. GLOBAL CSS & THEMING
+# ==========================================
 st.markdown("""
 <style>
-.block-container {
-    padding-top: 1.2rem;
-    max-width: 1450px;
-}
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    /* CSS Variables for Premium Dark Theme */
+    :root {
+        --bg-main: #080A0D;
+        --bg-surface: #101318;
+        --bg-secondary: #151922;
+        --border-color: #242933;
+        --text-primary: #F5F7FA;
+        --text-secondary: #9299A5;
+        --text-muted: #666D78;
+        --accent-blue: #4DA3FF;
+        --accent-success: #3DDC97;
+        --accent-warning: #F4C95D;
+        --accent-danger: #FF5C5C;
+    }
+
+    /* Base Typography & Background */
+    html, body, [class*="css"] {
+        font-family: 'Inter', sans-serif !important;
+        background-color: var(--bg-main) !important;
+        color: var(--text-primary) !important;
+    }
+
+    /* Hide Streamlit Chrome */
+    #MainMenu {visibility: hidden;}
+    header {visibility: hidden;}
+    footer {visibility: hidden;}
+    
+    /* Block container adjustments */
+    .block-container {
+        padding-top: 2rem !important;
+        padding-bottom: 2rem !important;
+        max-width: 1400px;
+    }
+
+    /* Streamlit sidebar */
+    [data-testid="stSidebar"] {
+        background-color: var(--bg-surface) !important;
+        border-right: 1px solid var(--border-color);
+    }
+    
+    /* Metric Cards */
+    [data-testid="metric-container"] {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 4px;
+        padding: 16px 20px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+    [data-testid="metric-container"] label {
+        color: var(--text-secondary) !important;
+        font-size: 13px !important;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    [data-testid="metric-container"] div[data-testid="stMetricValue"] {
+        color: var(--text-primary) !important;
+        font-weight: 600;
+    }
+
+    /* Custom Containers & Borders */
+    div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlockBorderWrapper"] {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color) !important;
+        border-radius: 6px !important;
+        padding: 1rem;
+    }
+
+    /* Buttons */
+    .stButton > button {
+        background-color: var(--bg-secondary) !important;
+        color: var(--text-primary) !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 4px !important;
+        font-weight: 500 !important;
+        transition: all 0.2s ease;
+    }
+    .stButton > button:hover {
+        border-color: var(--accent-blue) !important;
+        background-color: var(--bg-surface) !important;
+    }
+    /* Primary Button override */
+    .stButton > button[kind="primary"] {
+        background-color: var(--accent-blue) !important;
+        color: #000 !important;
+        border: none !important;
+    }
+    .stButton > button[kind="primary"]:hover {
+        opacity: 0.9;
+    }
+
+    /* Status Badges */
+    .badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .badge-new { background-color: #242933; color: #F5F7FA; border: 1px solid #3b4252; }
+    .badge-post_ready { background-color: rgba(77, 163, 255, 0.15); color: #4DA3FF; border: 1px solid rgba(77, 163, 255, 0.3); }
+    .badge-approved { background-color: rgba(61, 220, 151, 0.15); color: #3DDC97; border: 1px solid rgba(61, 220, 151, 0.3); }
+    .badge-rejected { background-color: rgba(255, 92, 92, 0.15); color: #FF5C5C; border: 1px solid rgba(255, 92, 92, 0.3); }
+
+    /* Story Card Typography */
+    .story-headline {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+    .story-meta {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin-bottom: 12px;
+    }
+    .story-summary {
+        font-size: 14px;
+        color: var(--text-muted);
+        line-height: 1.5;
+        margin-bottom: 12px;
+    }
+    
+    /* Top Header */
+    .app-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-end;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 16px;
+        margin-bottom: 24px;
+    }
+    .app-title {
+        font-size: 24px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        margin: 0;
+        line-height: 1;
+    }
+    .app-subtitle {
+        font-size: 12px;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        margin-top: 6px;
+    }
+    .system-status {
+        font-size: 12px;
+        color: var(--accent-success);
+        font-weight: 500;
+    }
+    
 </style>
 """, unsafe_allow_html=True)
 
-st.title("📰 CipherBrief AI Newsroom")
-st.caption("Autonomous Story Clustering, Multi-Source Synthesis & Multi-Platform Publisher")
 
-# -----------------------
-# DATA LOAD & AUTO CLUSTER
-# -----------------------
+# ==========================================
+# 2. DATA LOAD & CACHE
+# ==========================================
 @st.cache_data(ttl=30)
 def load_story_data():
     return get_all_stories(limit=100)
 
 stories = load_story_data()
 
-# -----------------------
-# SIDEBAR CONTROLS
-# -----------------------
-st.sidebar.title("⚡ CipherBrief Control Panel")
 
-if st.sidebar.button("📥 Fetch & Process Latest News", use_container_width=True):
-    from settings import OPENROUTER_API_KEY
-    if not OPENROUTER_API_KEY:
-        st.sidebar.error("❌ OPENROUTER_API_KEY is not set in Streamlit Secrets!")
-    else:
-        with st.spinner("Fetching and clustering news (this may take a few minutes)..."):
-            try:
-                import main
-                import sys
-                from io import StringIO
-                
-                # Capture output to avoid spamming the console and to count success
-                original_stdout = sys.stdout
-                sys.stdout = StringIO()
+# ==========================================
+# 3. ROUTING & STATE
+# ==========================================
+if 'active_page' not in st.session_state:
+    st.session_state.active_page = 'Overview'
+if 'selected_story_id' not in st.session_state:
+    st.session_state.selected_story_id = None
+
+
+# ==========================================
+# 4. TOP HEADER
+# ==========================================
+st.markdown("""
+<div class="app-header">
+    <div>
+        <h1 class="app-title">CIPHERBRIEF</h1>
+        <div class="app-subtitle">News Intelligence / Editorial Desk</div>
+    </div>
+    <div class="system-status">● ALL SYSTEMS OPERATIONAL</div>
+</div>
+""", unsafe_allow_html=True)
+
+
+# ==========================================
+# 5. SIDEBAR (NAVIGATION & FILTERS)
+# ==========================================
+with st.sidebar:
+    st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Navigation</h3>", unsafe_allow_html=True)
+    
+    # Custom Navigation
+    page_options = {
+        "Overview": "📊",
+        "All Stories": "📰",
+        "Post Ready": "🎨",
+        "Approved": "✅"
+    }
+    
+    for page, icon in page_options.items():
+        if st.button(f"{icon} {page}", key=f"nav_{page}", use_container_width=True, type="primary" if st.session_state.active_page == page else "secondary"):
+            st.session_state.active_page = page
+            st.session_state.selected_story_id = None
+            st.rerun()
+
+    st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
+    
+    st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
+    if st.button("📥 Fetch & Process Latest", use_container_width=True):
+        from settings import OPENROUTER_API_KEY
+        if not OPENROUTER_API_KEY:
+            st.error("❌ OPENROUTER_API_KEY is not set!")
+        else:
+            with st.status("Fetching and clustering news...", expanded=True) as status:
                 try:
-                    main.main()
-                finally:
-                    output = sys.stdout.getvalue()
-                    sys.stdout = original_stdout
-                
-                st.sidebar.success("✅ News fetched & processed successfully!")
-                with st.sidebar.expander("View Logs"):
-                    st.text(output)
-            except Exception as e:
-                st.sidebar.error(f"❌ Error fetching news: {e}")
-            
-            # Delay rerun slightly so the user can read the success message
-            import time
-            time.sleep(3)
+                    import main, sys
+                    from io import StringIO
+                    original_stdout = sys.stdout
+                    sys.stdout = StringIO()
+                    try:
+                        main.main()
+                    finally:
+                        output = sys.stdout.getvalue()
+                        sys.stdout = original_stdout
+                    status.update(label="News fetched successfully!", state="complete", expanded=False)
+                except Exception as e:
+                    status.update(label=f"Error: {e}", state="error", expanded=True)
+            time.sleep(2)
             st.cache_data.clear()
             st.rerun()
 
-if st.sidebar.button("🔄 Refresh View", use_container_width=True):
-    st.cache_data.clear()
-    st.rerun()
+    st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
+    
+    st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Filters</h3>", unsafe_allow_html=True)
+    search = st.text_input("Search", placeholder="Search stories...")
+    
+    categories = ["All"] + sorted(list(set([s.category for s in stories if s.category]))) if stories else ["All"]
+    category = st.selectbox("Category", categories)
+    
+    sources_list = ["All"] + sorted(list(set([s.primary_source for s in stories if s.primary_source]))) if stories else ["All"]
+    source_filter = st.selectbox("Source", sources_list)
+    
+    min_score = st.slider("Min Score", 0, 100, 0, 5)
+    
+    st.markdown("<br><br>", unsafe_allow_html=True)
+    with st.expander("System Diagnostics"):
+        if st.button("Run Health Check"):
+            diag = run_database_diagnostics()
+            st.json(diag)
 
-st.sidebar.markdown("---")
-
-search = st.sidebar.text_input("🔍 Search News Stories", placeholder="Search title or topics...")
-
-status_filter = st.sidebar.selectbox(
-    "Workflow Status",
-    ["All", "new", "post_ready", "approved", "rejected"]
-)
-
-categories = ["All"] + sorted(list(set([s.category for s in stories if s.category]))) if stories else ["All"]
-category = st.sidebar.selectbox("Category", categories)
-
-sources_list = ["All"] + sorted(list(set([s.primary_source for s in stories if s.primary_source]))) if stories else ["All"]
-source_filter = st.sidebar.selectbox("Source", sources_list)
-
-min_score = st.sidebar.slider("Minimum Story Score", 0, 100, 0, 5)
-
-sort_by = st.sidebar.selectbox("Sort By", ["Latest", "Potential to Boom (Virality)", "Overall Score"])
-
-# -----------------------
-# FILTER LOGIC & SEARCH
-# -----------------------
+# ==========================================
+# 6. FILTER LOGIC
+# ==========================================
 filtered_stories = stories
 if filtered_stories:
+    # Auto-filter based on navigation route
+    if st.session_state.active_page == "Post Ready":
+        filtered_stories = [s for s in filtered_stories if s.status == "post_ready"]
+    elif st.session_state.active_page == "Approved":
+        filtered_stories = [s for s in filtered_stories if s.status == "approved"]
+        
+    # Manual filters
     if search:
         s_lower = search.lower()
         filtered_stories = [s for s in filtered_stories if (
             s_lower in s.story_title.lower() or 
             (s.caption and s_lower in s.caption.lower()) or 
-            (s.hashtags and s_lower in s.hashtags.lower()) or 
             s_lower in s.category.lower() or 
-            s_lower in s.primary_source.lower() or 
-            s_lower in s.story_id.lower() or
-            any(s_lower in art.get('summary', '').lower() for art in s.articles)
+            s_lower in s.primary_source.lower()
         )]
-
-    if status_filter != "All":
-        filtered_stories = [s for s in filtered_stories if s.status == status_filter]
-
     if category != "All":
         filtered_stories = [s for s in filtered_stories if s.category == category]
-
     if source_filter != "All":
         filtered_stories = [s for s in filtered_stories if s.primary_source == source_filter]
-
     filtered_stories = [s for s in filtered_stories if s.overall_story_score >= min_score]
+    
+    # Default Sort by Latest
+    filtered_stories.sort(key=lambda s: s.first_published or "", reverse=True)
 
-    # Sorting logic
-    if sort_by == "Potential to Boom (Virality)":
-        filtered_stories.sort(key=lambda s: max([a.get('virality_score', 0) for a in s.articles] + [0]) if s.articles else 0, reverse=True)
-    elif sort_by == "Overall Score":
-        filtered_stories.sort(key=lambda s: s.overall_story_score, reverse=True)
-    else:
-        # Latest
-        filtered_stories.sort(key=lambda s: s.first_published or "", reverse=True)
 
-# -----------------------
-# MAIN TABS
-# -----------------------
-tab_newsroom, tab_queue, tab_analytics = st.tabs(["📰 Newsroom", "🚀 Publishing Queue", "📈 Analytics"])
+# ==========================================
+# 7. RENDER HELPER FUNCTIONS
+# ==========================================
+def render_story_card(story):
+    """Renders a compact, editorial story card."""
+    s_dict = story.to_dict()
+    current_status = str(story.status or "new").lower()
+    
+    badge_class = f"badge-{current_status}" if current_status in ["new", "post_ready", "approved", "rejected"] else "badge-new"
+    
+    primary_art = story.articles[0] if story.articles else {}
+    summary = primary_art.get('summary', '')
+    if len(summary) > 150:
+        summary = summary[:147] + "..."
+        
+    with st.container(border=True):
+        st.markdown(f"""
+        <div style='display:flex; justify-content:space-between; align-items:flex-start;'>
+            <div>
+                <div class='story-headline'>{story.story_title}</div>
+                <div class='story-meta'>{story.primary_source} &nbsp;·&nbsp; {story.first_published[:16] if story.first_published else ''}</div>
+            </div>
+            <div style='text-align:right;'>
+                <div style='font-size:24px; font-weight:700; color:var(--accent-blue); line-height:1;'>{story.overall_story_score}</div>
+                <div style='font-size:10px; color:var(--text-muted); margin-bottom:8px;'>SCORE</div>
+            </div>
+        </div>
+        <div class='story-summary'>{summary}</div>
+        <div style='display:flex; justify-content:space-between; align-items:center;'>
+            <div>
+                <span class='badge {badge_class}'>{current_status.upper().replace('_', ' ')}</span>
+                <span style='margin-left:12px; font-size:12px; color:var(--text-secondary); text-transform:uppercase;'>{story.category}</span>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # Add a button underneath the HTML rendering
+        if st.button("Review Story", key=f"btn_review_{story.story_id}"):
+            st.session_state.selected_story_id = story.story_id
+            st.rerun()
 
-with tab_newsroom:
-    # -----------------------
-        # METRICS KPI DASHBOARD
-        # -----------------------
-    m1, m2, m3, m4, m5 = st.columns(5)
-    total_stories = len(filtered_stories)
-    approved_count = len([s for s in stories if s.status == "approved"])
-    rejected_count = len([s for s in stories if s.status == "rejected"])
-    posts_ready_count = len([s for s in stories if s.status == "post_ready"])
+def render_story_detail(story):
+    """Renders the professional detail/workspace view for a single story."""
+    if st.button("← Back to List"):
+        st.session_state.selected_story_id = None
+        st.rerun()
+        
+    st.markdown("<br>", unsafe_allow_html=True)
+    
+    s_dict = story.to_dict()
+    story_id = story.story_id
+    current_status = str(story.status or "new").lower()
+    
+    c1, c2 = st.columns([1, 1.5], gap="large")
+    
+    # Check assets
+    render_path = story.rendered_image_path or get_render_path_for_uuid(story_id)
+    has_render = bool(render_path and os.path.exists(render_path) and os.path.getsize(render_path) > 100)
+    
+    cap_p = os.path.join(CAPTIONS_DIR, f"caption_{story_id}.txt")
+    has_caption_file = os.path.exists(cap_p) and os.path.getsize(cap_p) > 10
+    
+    hash_p = os.path.join(HASHTAGS_DIR, f"hashtags_{story_id}.txt")
+    has_hashtags_file = os.path.exists(hash_p) and os.path.getsize(hash_p) > 10
 
-    m1.metric("Active Stories", total_stories)
-    m2.metric("Posts Ready", posts_ready_count)
-    m3.metric("Approved Posts", approved_count)
-    m4.metric("Rejected Stories", rejected_count)
-    avg_score = f"{sum(s.overall_story_score for s in filtered_stories) / max(1, len(filtered_stories)):.1f}"
-    m5.metric("Avg Story Score", avg_score)
+    # Load missing texts from files
+    caption_text = story.caption
+    if (not caption_text or pd.isna(caption_text)) and has_caption_file:
+        try:
+            with open(cap_p, "r", encoding="utf-8") as f: caption_text = f.read()
+        except OSError: pass
 
-    st.divider()
+    hashtags_text = story.hashtags
+    if (not hashtags_text or pd.isna(hashtags_text)) and has_hashtags_file:
+        try:
+            with open(hash_p, "r", encoding="utf-8") as f: hashtags_text = f.read()
+        except OSError: pass
 
-    # -----------------------
-    # PAGINATION
-    # -----------------------
-    PER_PAGE = 10
-    pages = max(1, math.ceil(len(filtered_stories) / PER_PAGE))
-    page = st.number_input("Page Number", min_value=1, max_value=pages, value=1, step=1)
+    with c1:
+        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-bottom:16px;'>POST PREVIEW</h3>", unsafe_allow_html=True)
+        if current_status == "approved":
+            st.markdown("<div style='background:rgba(61, 220, 151, 0.1); border:1px solid #3DDC97; color:#3DDC97; padding:12px; border-radius:6px; text-align:center; font-weight:600; margin-bottom:16px;'>✓ APPROVED — READY TO POST</div>", unsafe_allow_html=True)
+        elif current_status == "post_ready":
+            st.markdown("<div style='background:rgba(77, 163, 255, 0.1); border:1px solid #4DA3FF; color:#4DA3FF; padding:12px; border-radius:6px; text-align:center; font-weight:600; margin-bottom:16px;'>POST READY</div>", unsafe_allow_html=True)
 
-    start_idx = (page - 1) * PER_PAGE
-    end_idx = start_idx + PER_PAGE
-    paged_stories = filtered_stories[start_idx:end_idx] if filtered_stories else []
+        if has_render:
+            try:
+                from PIL import Image
+                img = Image.open(render_path)
+                st.image(img, use_container_width=True)
+                st.markdown("<div style='text-align:center; font-size:11px; color:#666D78; margin-top:8px;'>1080 × 1920 · PNG</div>", unsafe_allow_html=True)
+            except OSError:
+                st.error("Image exists but could not be loaded.")
+        else:
+            st.info("Visual render not yet generated. Synthesize post to create.")
 
-    # -----------------------
-    # STORY NEWSROOM CARDS
-    # -----------------------
-    if not paged_stories:
-        st.info("No active news stories match the selected filters.")
-    else:
-        for story in paged_stories:
-            s_dict = story.to_dict()
-            story_id = story.story_id
-            articles = story.articles
-            current_status = str(story.status or "new").lower()
+    with c2:
+        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-bottom:16px;'>EDITORIAL BRIEF</h3>", unsafe_allow_html=True)
+        
+        with st.container(border=True):
+            st.markdown(f"""
+            <div style='font-size:22px; font-weight:600; margin-bottom:12px;'>{story.story_title}</div>
+            <div style='display:flex; justify-content:space-between; border-bottom:1px solid #242933; padding-bottom:12px; margin-bottom:12px;'>
+                <div><span style='color:#9299A5; font-size:12px;'>SOURCE</span><br>{story.primary_source}</div>
+                <div><span style='color:#9299A5; font-size:12px;'>CATEGORY</span><br>{story.category}</div>
+                <div><span style='color:#9299A5; font-size:12px;'>SCORE</span><br><span style='color:#4DA3FF; font-weight:700;'>{story.overall_story_score}/100</span></div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            st.markdown("**AI Analysis & Reasoning**")
+            primary_art = story.articles[0] if story.articles else {}
+            explanation_points = generate_score_explanation(primary_art, story.num_sources)
+            for point in explanation_points:
+                st.markdown(f"- {point}")
 
-            # Asset Checks
-            render_path = story.rendered_image_path or get_render_path_for_uuid(story_id)
-            has_render = bool(render_path and os.path.exists(render_path) and os.path.getsize(render_path) > 100)
-
-            cap_p = os.path.join(CAPTIONS_DIR, f"caption_{story_id}.txt")
-            has_caption_file = os.path.exists(cap_p) and os.path.getsize(cap_p) > 10
-
-            hash_p = os.path.join(HASHTAGS_DIR, f"hashtags_{story_id}.txt")
-            has_hashtags_file = os.path.exists(hash_p) and os.path.getsize(hash_p) > 10
-
-            meta_p = os.path.join(ARTICLES_DIR, current_status, f"article_{story_id}.json")
-            has_meta_file = os.path.exists(meta_p) and os.path.getsize(meta_p) > 0
-
-            primary_art = articles[0] if articles else {}
-            primary_img_url = primary_art.get("image_url", "")
-            has_img_url = bool(primary_img_url and str(primary_img_url) != "nan" and str(primary_img_url).startswith("http"))
-
-            with st.container(border=True):
-                header_col1, header_col2 = st.columns([4, 1])
-
-                with header_col1:
-                    st.subheader(story.story_title)
-                    # Feature 3: Multi-Source Story Card Chips
-                    sources_html = f"<span style='background-color:#1E88E5; padding:2px 8px; border-radius:12px; font-size:12px; margin-right:5px;'>{story.primary_source}</span>"
-                    for src in story.supporting_sources:
-                        sources_html += f"<span style='background-color:#424242; padding:2px 8px; border-radius:12px; font-size:12px; margin-right:5px;'>{src}</span>"
-                    st.markdown(sources_html, unsafe_allow_html=True)
-                    st.caption(f"🏷️ Category: {story.category} | ⏰ First published: {story.first_published}")
-
-                with header_col2:
-                    st.markdown(f"### 🔥 **{story.overall_story_score}**/100")
-                    st.caption(f"Status: `{current_status.upper()}`")
-                    if current_status == "failed" and getattr(story, "publish_error", None):
-                        st.error(story.publish_error)
-
-                # Feature 1 & 2: Editorial Review Panel & Explainability
-                with st.expander(f"🔍 Editorial Review Panel (View Details & AI Analysis)"):
-                    er_col1, er_col2 = st.columns(2)
-                    
-                    with er_col1:
-                        st.markdown("#### 📝 Story Content")
-                        st.write(f"**Original Headline:** {primary_art.get('title')}")
-                        st.write(f"**AI Rewritten Headline:** {story.story_title}")
-                        st.write(f"**Summary:** {primary_art.get('summary')}")
-                        st.write(f"**Source:** {story.primary_source}")
-                        st.write(f"**Published Time:** {story.first_published}")
-                        
-                        st.markdown("#### 📷 Generation Assets")
-                        st.write(f"**Caption:** {story.caption or 'Not generated yet'}")
-                        st.write(f"**Hashtags:** {story.hashtags or 'Not generated yet'}")
-                        
-                        st.markdown("#### 🔗 Coverage Links")
-                        for idx, art in enumerate(articles, 1):
-                            st.caption(f"{idx}. [{art.get('source')}] {art.get('title')} ({art.get('published')})")
-                            if art.get("url") and pd.notna(art.get("url")):
-                                st.markdown(f"[Read on {art.get('source')}]({art.get('url')})")
-                                
-                    with er_col2:
-                        st.markdown("#### 🧠 AI Score Explainability")
-                        st.markdown(f"**Overall Score: {story.overall_story_score}/100**")
-                        st.markdown("*Why?*")
-                        explanation_points = generate_score_explanation(primary_art, story.num_sources)
-                        for point in explanation_points:
-                            st.markdown(f"• {point}")
-                            
-                        st.markdown("#### 📊 Sub-Scores")
-                        st.write(f"- Importance: {primary_art.get('importance', 0)*10}/100")
-                        st.write(f"- Virality Potential: {primary_art.get('virality_score', 0)}/100")
-                        st.write(f"- Growth Potential: {primary_art.get('growth_score', 0)}/100")
-                        st.write(f"- Freshness: {primary_art.get('freshness_score', 0)}/100")
-                        
-                        st.markdown("#### 🗄️ Database Records")
-                        st.write(f"**Story UUID:** `{story_id}`")
-                        st.write(f"**Primary Article ID:** `{story.primary_article_id}`")
-                        if story.rendered_image_path:
-                            st.write(f"**Render Path:** `{story.rendered_image_path}`")
-                            
-                        # Feature 7: Audit Log
-                        st.markdown("#### 📜 Audit Log Timeline")
-                        audit_logs = logging_service.get_audit_log_for_story(story_id)
-                        audit_text = "\\n".join(audit_logs)
-                        st.code(audit_text, language="text")
-
-                # Actions Row
-                a1, a2, a3, a4, a5 = st.columns(5)
-
-                # 1. GENERATE / SYNTHESIZE STORY POST
-                if a1.button("⚡ Synthesize Post", key=f"gen_s_{story_id}", disabled=(current_status in ["approved", "rejected"])):
-                    with st.spinner("Synthesizing multi-source copy & rendering post..."):
-                        updated_s, err = handle_generate_story_action(story)
-                        if err:
-                            st.error(f"Generation Error: {err}")
-                        else:
-                            transition_article_status(s_dict, "post_ready")
-                            st.success("✓ Multi-source story post synthesized!")
-                            st.cache_data.clear()
-                            st.rerun()
-
-                # 2. PREVIEW / MANUAL CONTENT WORKFLOW
-                if current_status == "post_ready":
-                    with a2.popover("👁️ Live Preview"):
-                        st.markdown("### 📱 Generated Post Preview")
-
-                        if has_render:
-                            mp4_path = render_path.replace(".png", ".mp4") if render_path else ""
-                            has_mp4 = os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 1000
-
-                            try:
-                                if has_mp4:
-                                    with open(mp4_path, "rb") as video_file:
-                                        video_bytes = video_file.read()
-                                    st.video(video_bytes)
-                                    
-                                    st.download_button("⬇️ Download MP4 Post", video_bytes, file_name=f"cipherbrief_post_{story_id}.mp4", mime="video/mp4")
-                                else:
-                                    from PIL import Image
-                                    img = Image.open(render_path)
-                                    st.image(img, use_container_width=True)
-                                    st.warning("⚠️ MP4 video missing, showing static image instead.")
-                                
-                                with open(render_path, "rb") as f:
-                                    st.download_button("⬇️ Download Static Image", f, file_name=f"cipherbrief_post_{story_id}.png", mime="image/png")
-                            except OSError as e:
-                                st.error(f"⚠️ Live Preview Error: Could not render media ({e})")
-                        else:
-                            st.warning("⚠️ Render PNG missing or invalid.")
-
-                        # Load caption from file if missing from memory
-                        caption_text = story.caption
-                        if (not caption_text or pd.isna(caption_text)) and os.path.exists(cap_p):
-                            try:
-                                with open(cap_p, "r", encoding="utf-8") as f:
-                                    caption_text = f.read()
-                            except OSError:
-                                pass
-
-                        # Load hashtags from file if missing from memory
-                        hashtags_text = story.hashtags
-                        if (not hashtags_text or pd.isna(hashtags_text)) and os.path.exists(hash_p):
-                            try:
-                                with open(hash_p, "r", encoding="utf-8") as f:
-                                    hashtags_text = f.read()
-                            except OSError:
-                                pass
-
-                        st.markdown("**Caption:**")
-                        if caption_text:
-                            st.code(caption_text, language="text")
-                        else:
-                            st.error("⚠️ Caption missing or failed generation.")
-
-                        st.markdown("**Hashtags:**")
-                        if hashtags_text:
-                            st.code(hashtags_text, language="text")
-                        else:
-                            st.error("⚠️ Hashtags missing or failed generation.")
-
-                # 3. APPROVE
-                if current_status == "post_ready":
-                    if a3.button("✅ Approve Post", key=f"app_s_{story_id}"):
-                        if not has_render or not has_caption_file:
-                            st.error("Cannot approve: Required assets missing.")
-                        else:
-                            transition_article_status(s_dict, "approved")
-                            st.success("Story Approved!")
-                            st.cache_data.clear()
-                            st.rerun()
-
-                # 4. REJECT
-                if current_status in ["new", "post_ready"]:
-                    if a4.button("❌ Reject Story", key=f"rej_s_{story_id}"):
-                        transition_article_status(s_dict, "rejected")
-                        st.warning("Story Rejected.")
+        st.markdown("<br>", unsafe_allow_html=True)
+        
+        # Caption section
+        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-bottom:8px;'>CAPTION</h3>", unsafe_allow_html=True)
+        if caption_text:
+            st.code(caption_text, language="text")
+        else:
+            st.info("No caption generated yet.")
+            
+        # Hashtags section
+        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-top:24px; margin-bottom:8px;'>HASHTAGS</h3>", unsafe_allow_html=True)
+        if hashtags_text:
+            # Display as a code block for easy copying
+            st.code(hashtags_text, language="text")
+        else:
+            st.info("No hashtags generated yet.")
+            
+        st.markdown("<hr style='border-color: #242933;'>", unsafe_allow_html=True)
+        
+        # Action Buttons
+        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-bottom:16px;'>WORKFLOW ACTIONS</h3>", unsafe_allow_html=True)
+        
+        col_a1, col_a2, col_a3, col_a4 = st.columns(4)
+        
+        with col_a1:
+            if st.button("⚡ Synthesize", disabled=(current_status in ["approved", "rejected"]), use_container_width=True):
+                with st.status("Synthesizing Post...", expanded=True) as status:
+                    st.write("Analyzing story metrics...")
+                    st.write("Generating editorial copy...")
+                    st.write("Rendering 1080x1920 layout...")
+                    updated_s, err = handle_generate_story_action(story)
+                    if err:
+                        status.update(label=f"Generation Error: {err}", state="error")
+                    else:
+                        transition_article_status(s_dict, "post_ready")
+                        status.update(label="Post Synthesized Successfully", state="complete")
+                        time.sleep(1)
                         st.cache_data.clear()
                         st.rerun()
-
-                # 5. EXPORT / MANUAL POSTING STATUS
-                if current_status == "approved":
-                    st.success("✅ READY TO POST")
-                    e1, e2, e3 = st.columns(3)
-                    with e1:
-                        if has_render:
-                            mp4_path = render_path.replace(".png", ".mp4") if render_path else ""
-                            has_mp4 = os.path.exists(mp4_path) and os.path.getsize(mp4_path) > 1000
-                            
-                            if has_mp4:
-                                with open(mp4_path, "rb") as video_file:
-                                    video_bytes = video_file.read()
-                                st.download_button("⬇️ Download MP4", video_bytes, file_name=f"cipherbrief_post_{story_id}.mp4", mime="video/mp4", use_container_width=True)
-                            
-                            with open(render_path, "rb") as f:
-                                st.download_button("⬇️ Download Image", f, file_name=f"cipherbrief_post_{story_id}.png", mime="image/png", use_container_width=True)
-                    with e2:
-                        st.code(story.caption or "Missing Caption", language="text")
-                    with e3:
-                        st.code(story.hashtags or "Missing Hashtags", language="text")
-
-    # -----------------------
-    # SYSTEM LOGS & DIAGNOSTICS
-    # -----------------------
-    with st.expander("🩺 System Diagnostics & Health Check (Bug #6)"):
-        diag = run_database_diagnostics()
-        d1, d2, d3, d4 = st.columns(4)
-        d1.metric("Total Articles in DB", diag["total_articles"])
-        d2.metric("Total Stories Clustered", diag["total_stories"])
-        d3.metric("Duplicate URLs", diag["duplicate_urls_count"])
-        d4.metric("Broken File Paths", diag["broken_file_paths_count"])
-
-        if diag["is_healthy"]:
-            st.success("✓ Database Health Check Passed: No orphan records or broken assets detected.")
-        else:
-            st.warning(f"⚠️ Health Notice: Missing Captions={diag['missing_captions_count']}, Missing Images={diag['missing_images_count']}")
-
-    pass
-
-    with st.expander("📋 System Activity Logs"):
-        logs = logging_service.get_recent_logs(30)
-        st.code("".join(logs) if logs else "No system logs recorded yet.", language="text")
-
-    pass
+                        
+        with col_a2:
+            if st.button("✅ Approve", disabled=(current_status != "post_ready" or not has_render), use_container_width=True):
+                transition_article_status(s_dict, "approved")
+                st.cache_data.clear()
+                st.rerun()
+                
+        with col_a3:
+            if st.button("❌ Reject", disabled=(current_status not in ["new", "post_ready"]), use_container_width=True):
+                transition_article_status(s_dict, "rejected")
+                st.cache_data.clear()
+                st.session_state.selected_story_id = None
+                st.rerun()
+                
+        with col_a4:
+            if has_render:
+                with open(render_path, "rb") as f:
+                    st.download_button("⬇️ Download Image", f, file_name=f"cipherbrief_{story_id}.png", mime="image/png", use_container_width=True)
 
 
-with tab_analytics:
-    st.subheader("📈 Newsroom Analytics")
-    st.markdown("Performance metrics and global dashboard.")
-    
-    # Calculate Analytics
-    today_str = pd.Timestamp.now().strftime("%Y-%m-%d")
-    articles_collected_today = sum(1 for s in stories if today_str in (s.first_published or ""))
-    
-    # Images downloaded - approx based on images available
-    images_downloaded = sum(1 for s in stories if s.articles and s.articles[0].get("image_url"))
-    
-    generated_stories = [s for s in stories if s.status in ["post_ready", "approved"]]
-    gen_success_rate = f"{(len(generated_stories) / max(1, len(stories))) * 100:.1f}%"
+# ==========================================
+# 8. PAGE ROUTING & RENDERING
+# ==========================================
 
+# If a specific story is selected, show detail view (overrides page routing)
+if st.session_state.selected_story_id:
+    # Find story
+    selected_story = next((s for s in stories if s.story_id == st.session_state.selected_story_id), None)
+    if selected_story:
+        render_story_detail(selected_story)
+    else:
+        st.error("Story not found.")
+        st.button("Back", on_click=lambda: st.session_state.update(selected_story_id=None))
+
+else:
+    if st.session_state.active_page == "Overview":
+        st.markdown("<h2 style='font-size:28px; font-weight:600; margin-bottom:4px;'>Good afternoon</h2>", unsafe_allow_html=True)
+        st.markdown("<div style='color:var(--text-secondary); margin-bottom:32px;'>Editorial Desk Overview</div>", unsafe_allow_html=True)
         
-    avg_score_num = sum(s.overall_story_score for s in stories) / max(1, len(stories))
-    
-    # Layout
-    a1, a2, a3 = st.columns(3)
-    with a1:
-        st.metric("Articles Collected Today", articles_collected_today)
-        st.metric("Total Stories Clustered", len(stories))
-        st.metric("Images Downloaded", images_downloaded)
-    with a2:
-        st.metric("Generation Success Rate", gen_success_rate)
-        st.metric("Average AI Score", f"{avg_score_num:.1f}/100")
-    with a3:
-        st.markdown("**Top Categories**")
-        cat_counts = {}
-        for s in stories:
-            cat_counts[s.category] = cat_counts.get(s.category, 0) + 1
-        for cat, cnt in sorted(cat_counts.items(), key=lambda x: x[1], reverse=True)[:3]:
-            st.caption(f"{cat}: {cnt} stories")
+        m1, m2, m3, m4 = st.columns(4)
+        active_count = len([s for s in stories if s.status not in ["rejected"]])
+        posts_ready_count = len([s for s in stories if s.status == "post_ready"])
+        approved_count = len([s for s in stories if s.status == "approved"])
+        avg_score = f"{sum(s.overall_story_score for s in stories) / max(1, len(stories)):.1f}"
+        
+        m1.metric("Active Stories", active_count)
+        m2.metric("Posts Ready", posts_ready_count)
+        m3.metric("Approved Posts", approved_count)
+        m4.metric("Avg. Story Score", avg_score)
+        
+        st.markdown("<br><h3 style='font-size:20px; font-weight:600; margin-bottom:16px;'>Top Stories</h3>", unsafe_allow_html=True)
+        
+        # Show top 6 stories sorted by score
+        top_stories = sorted(stories, key=lambda s: s.overall_story_score, reverse=True)[:6]
+        if not top_stories:
+            st.info("NO STORIES YET. Your editorial pipeline is waiting for the next news cycle.")
+        else:
+            r1, r2 = st.columns(2)
+            for i, story in enumerate(top_stories):
+                with (r1 if i % 2 == 0 else r2):
+                    render_story_card(story)
+
+    else:
+        # All Stories, Post Ready, or Approved Pages
+        st.markdown(f"<h2 style='font-size:24px; font-weight:600; margin-bottom:24px;'>{st.session_state.active_page}</h2>", unsafe_allow_html=True)
+        
+        if not filtered_stories:
+            if st.session_state.active_page == "Post Ready":
+                st.info("NO POSTS READY. Synthesize an active story to create your next CipherBrief post.")
+            elif st.session_state.active_page == "Approved":
+                st.info("NO APPROVED POSTS. Approve a ready post to stage it for publishing.")
+            else:
+                st.info("No active news stories match the selected filters.")
+        else:
+            PER_PAGE = 10
+            pages = max(1, math.ceil(len(filtered_stories) / PER_PAGE))
+            page = st.number_input("Page Number", min_value=1, max_value=pages, value=1, step=1)
             
-        st.markdown("**Top News Sources**")
-        src_counts = {}
-        for s in stories:
-            src_counts[s.primary_source] = src_counts.get(s.primary_source, 0) + 1
-        for src, cnt in sorted(src_counts.items(), key=lambda x: x[1], reverse=True)[:3]:
-            st.caption(f"{src}: {cnt} stories")
+            start_idx = (page - 1) * PER_PAGE
+            end_idx = start_idx + PER_PAGE
+            paged_stories = filtered_stories[start_idx:end_idx]
+            
+            c1, c2 = st.columns(2)
+            for i, story in enumerate(paged_stories):
+                with (c1 if i % 2 == 0 else c2):
+                    render_story_card(story)
+
