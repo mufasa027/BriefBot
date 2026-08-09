@@ -82,10 +82,11 @@ class LayoutEngine:
         line_gap = HEADLINE_CONFIG["line_gap"]
 
         current_y = headline_y
+        _, ref_top, _, ref_bottom = self.draw.textbbox((0, 0), "Ayjp", font=headline_font)
+        uniform_height = ref_bottom - ref_top
+
         for line in headline_lines:
-            bbox = self.draw.textbbox((0, 0), line, font=headline_font)
-            text_h = bbox[3] - bbox[1]
-            current_y += (text_h + padding_y * 2 + line_gap)
+            current_y += (uniform_height + padding_y * 2 + line_gap)
         headline_bottom_y = current_y
 
         # 3. Dynamic Summary Space Solver
