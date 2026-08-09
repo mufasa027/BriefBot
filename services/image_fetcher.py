@@ -1,6 +1,7 @@
 import os
 import io
 import requests
+from bs4 import BeautifulSoup
 from PIL import Image, ImageDraw, ImageFilter
 from services.logging_service import log_event
 
@@ -41,6 +42,27 @@ def create_branded_fallback_image(output_path=None):
     except Exception as e:
         print(f"Fallback generation error: {e}")
         return output_path
+
+
+def scrape_article_image(url):
+    """Fallback scraper to find og:image when RSS fails to provide one."""
+    try:
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'}
+        r = requests.get(url, headers=headers, timeout=5)
+        soup = BeautifulSoup(r.text, 'html.parser')
+        
+        # Try og:image
+        og = soup.find('meta', property='og:image')
+        if og and og.get('content'):
+            return og['content']
+            
+        # Try twitter:image
+        tw = soup.find('meta', {'name': 'twitter:image'})
+        if tw and tw.get('content'):
+            return tw['content']
+    except Exception as e:
+        pass
+    return None
 
 
 def download_valid_image(url, target_path, timeout=8):
@@ -107,6 +129,15 @@ def fetch_image(article, return_diagnostics=False):
     primary_url = article.get("image_url")
     if primary_url and str(primary_url) != "nan":
         candidate_urls.append(primary_url)
+        
+    # 1.5. If primary URL is missing, scrape it from the article page
+    if not primary_url or str(primary_url) == "nan":
+        article_url = article.get("url")
+        if article_url and str(article_url) != "nan":
+            scraped_img = scrape_article_image(article_url)
+            if scraped_img:
+                candidate_urls.append(scraped_img)
+
 
     # 2. Newspaper parsed images
     extra_imgs = article.get("images", [])

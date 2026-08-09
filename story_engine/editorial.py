@@ -177,7 +177,7 @@ def synthesize_story_post_copy(story: any, max_retries: int = 3) -> dict:
         for attempt in range(1, max_retries + 1):
             try:
                 response = client.chat.completions.create(
-                    model="deepseek/deepseek-chat-v3.1",
+                    model="deepseek/deepseek-chat",
                     temperature=0.25,
                     max_tokens=500,
                     messages=[
