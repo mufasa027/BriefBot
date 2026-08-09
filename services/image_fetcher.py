@@ -133,7 +133,7 @@ def fetch_image(article, return_diagnostics=False):
     # 1.5. If primary URL is missing, scrape it from the article page
     if not primary_url or str(primary_url) == "nan":
         article_url = article.get("url")
-        if article_url and str(article_url) != "nan":
+        if article_url and str(article_url) != "nan" and "news.google.com" not in article_url.lower():
             scraped_img = scrape_article_image(article_url)
             if scraped_img:
                 candidate_urls.append(scraped_img)

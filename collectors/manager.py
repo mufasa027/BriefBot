@@ -11,6 +11,22 @@ from collectors.rss.ndtv import fetch_ndtv_news
 from collectors.rss.timesofindia import fetch_timesofindia_news
 from collectors.rss.moscowtimes import fetch_moscowtimes_news
 
+import re
+from bs4 import BeautifulSoup
+
+def _clean_text(text, source_name):
+    if not text:
+        return ""
+    # Remove HTML tags
+    soup = BeautifulSoup(str(text), "html.parser")
+    text = soup.get_text(separator=" ").strip()
+    
+    # Strip common publisher suffixes from titles (e.g. " | Hindustan Times" or " - NDTV")
+    text = re.sub(r'\s*[|\-]\s*' + re.escape(source_name) + r'.*?$', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'\s*[|\-]\s*India News.*?$', '', text, flags=re.IGNORECASE)
+    text = re.sub(r'\s*[|\-]\s*World News.*?$', '', text, flags=re.IGNORECASE)
+    return text.strip()
+
 
 def fetch_all_news():
     """
@@ -41,6 +57,12 @@ def fetch_all_news():
             if news_items:
                 # Limit to 15 articles per source to prevent LLM/API timeouts
                 news_items = news_items[:15]
+                
+                # Clean up HTML and title suffixes before adding to main list
+                for item in news_items:
+                    item["title"] = _clean_text(item.get("title", ""), source_name)
+                    item["summary"] = _clean_text(item.get("summary", ""), source_name)
+                    
                 articles.extend(news_items)
                 print(f"[OK] Ingested {len(news_items)} articles from {source_name}")
         except Exception as e:
