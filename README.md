@@ -1,26 +1,24 @@
-# 📰 CipherBrief
+# 📰 CipherBrief AI Newsroom
 
-> **The fully autonomous, AI-driven newsroom that turns raw RSS feeds into production-ready Instagram stories.**
+> **An end-to-end autonomous AI newsroom that aggregates global news, synthesizes multi-source coverage using LLMs, and generates production-ready social media assets.**
 
 [![Python Version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://python.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-CipherBrief is a robust, end-to-end data pipeline and dashboard that autonomously ingests global news, uses AI to cluster and rank stories, synthesizes editorial captions, and renders stunning typographic images ready for social media publishing.
+CipherBrief is a robust data pipeline and dashboard that autonomously ingests global news, uses AI to cluster and rank stories, synthesizes editorial captions, and renders stunning typographic images and MP4 video reels ready for social media publishing.
 
 ![Dashboard](assets/cipherbrief_dashboard.jpg)
 
 ---
 
-## ✨ Features
+## ✨ Engineering Highlights & Business Value
 
-- **📡 Multi-Source RSS Ingestion:** Continuously monitors BBC, Reuters, AP, CNN, DW, and more.
-- **🧠 AI Story Clustering:** Detects when multiple outlets report on the same event and clusters them into a single, comprehensive "Story" instead of redundant articles.
-- **⚖️ Editorial Ranking Engine:** Scores stories on virality, importance, and freshness to surface only the most critical global events.
-- **🎨 Automated Asset Rendering:** Built-in Python/OpenCV renderer dynamically generates beautiful, branded, typographic Instagram-ready image posts.
-- **📝 Automated Copywriting:** Uses LLMs to synthesize engaging captions (with context and CTAs) and strict hashtag generation (6 story-specific + 4 growth tags).
-- **📊 Streamlit Dashboard:** A production-grade UI for human-in-the-loop content generation, live previewing, and editorial approval.
-- **🚀 Manual Export Workflow:** Once approved, users can easily download the generated image and copy the caption/hashtags directly from the dashboard for final posting on Instagram.
+- **📡 Automated Data Ingestion:** Engineered a robust ingestion pipeline using RSS feeds and `BeautifulSoup` to scrape breaking news from 10+ global sources (BBC, Reuters, AP, NDTV, Hindustan Times, etc.). Includes custom web scrapers for extracting missing media assets (like `og:image` tags) when RSS feeds fall short.
+- **🧠 AI-Powered Synthesis:** Integrated the OpenRouter LLM API to automatically cluster related stories, filter out noise, and synthesize multi-source reporting into concise, authoritative summaries.
+- **⚖️ Algorithmic Scoring Engine:** Built a custom ranking algorithm that scores stories based on *importance, virality, freshness, and growth potential* to prioritize what gets published.
+- **🎨 Dynamic Asset Generation:** Programmed a custom rendering engine using `Pillow (PIL)` and `FFmpeg` to dynamically composite high-resolution news photos, text, and cinematic gradients into pixel-perfect static images and 10-second MP4 video reels.
+- **📊 Streamlit Control Panel:** Designed a responsive, state-managed dashboard using **Streamlit**, allowing human editors to review AI-generated posts, audit logs, and approve/reject content with a single click.
 
 ---
 
@@ -28,19 +26,35 @@ CipherBrief is a robust, end-to-end data pipeline and dashboard that autonomousl
 
 ```mermaid
 graph TD
-    A[RSS Feeds] -->|Poll| B(Ingestion Collector)
+    A[Global RSS Feeds] -->|Poll & Scrape| B(Ingestion Collector)
     B --> C{Story Clustering Engine}
-    C -->|New Event| D[Database - Stories]
+    C -->|New Event| D[(SQLite Database)]
     C -->|Existing Event| D
     D --> E(Editorial AI Ranker)
-    E --> F[Dashboard Review]
+    E --> F[Streamlit Dashboard Review]
     F -->|Synthesize| G(Content Synthesizer)
-    G --> H(Image Renderer)
+    G --> H(Pillow/FFmpeg Image & Video Renderer)
     H --> I[Dashboard Live Preview]
-    I -->|Approve & Download| J[Manual Instagram Posting]
+    I -->|Approve| J[Production Ready Assets]
 ```
 
 ![Post Rendering](assets/cipherbrief_post.jpg)
+
+---
+
+## 💡 Challenges Overcome
+
+- **Handling inconsistent data sources:** RSS feeds often miss high-quality images. I engineered a robust fallback system that gracefully scrapes the original article's HTML meta tags (`og:image`) to retrieve the photo, or applies a dynamically generated branded fallback gradient if all else fails.
+- **Ensuring strict JSON outputs from AI:** Wrote strict system prompts and retry-loops to ensure the LLM consistently returns structured JSON for the headlines, summaries, and exact hashtag counts, preventing pipeline crashes.
+- **Transactional Asset Generation:** Designed a strict file-validation system that ensures all assets (images, captions, and hashtags) are successfully generated before a post is marked as "Ready", avoiding incomplete posts from ever reaching the dashboard.
+
+---
+
+## 🛠️ Tech Stack
+- **Backend & Data:** Python 3.11, SQLAlchemy, SQLite, Feedparser, BeautifulSoup
+- **Frontend / Deployment:** Streamlit, Streamlit Cloud
+- **AI / Machine Learning:** OpenRouter API (DeepSeek/GPT models), Prompt Engineering
+- **Asset Processing:** OpenCV, Pillow, Numpy, FFmpeg
 
 ---
 
@@ -48,8 +62,8 @@ graph TD
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/CipherBrief.git
-cd CipherBrief
+git clone https://github.com/mufasa027/BriefBot.git
+cd BriefBot
 ```
 
 ### 2. Set up the environment
@@ -77,51 +91,8 @@ streamlit run app.py
 
 ---
 
-## ⚙️ Configuration
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `OPENROUTER_API_KEY` | Required for AI clustering & captions | `sk-or-v1-...` |
-| `DATABASE_NAME` | SQLite database file | `briefbot.db` |
-
----
-
-## 📂 Project Structure
-
-```text
-CipherBrief/
-├── ai/                 # LLM integrations, clustering logic, and ranking
-├── collectors/         # RSS feed parsers and data ingestion
-├── database/           # SQLite schemas, migrations, and CRUD operations
-├── designer/           # OpenCV/Pillow typographic image renderer
-├── services/           # Core business logic (Storage, Queue, Image Fetcher)
-├── story_engine/       # Similarity detection and clustering algorithms
-├── app.py              # Streamlit human-in-the-loop dashboard
-├── main.py             # CLI pipeline entrypoint
-└── requirements.txt    # Pinned dependencies
-```
-
----
-
-## 🛠️ Tech Stack
-- **Backend:** Python 3.11, SQLAlchemy, SQLite
-- **Frontend:** Streamlit
-- **AI/LLM:** OpenRouter (GPT-4 / Claude / Llama / DeepSeek)
-- **Image Processing:** OpenCV, Pillow, Numpy
-- **Data Collection:** Feedparser, Newspaper3k/4k
-
----
-
-## 🗺️ Roadmap
-- [ ] Add Docker support for one-command deployment
-- [ ] Implement robust CI/CD pipeline via GitHub Actions
-- [x] Full suite of unit tests with `pytest`
-- [ ] Add Multi-Language Translation support
-
----
-
 ## 🤝 Contributing
-Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to set up the development environment, run tests, and submit Pull Requests.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 This project is licensed under the [MIT License](LICENSE).
