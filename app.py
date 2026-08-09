@@ -95,6 +95,9 @@ status_filter = st.sidebar.selectbox(
 categories = ["All"] + sorted(list(set([s.category for s in stories if s.category]))) if stories else ["All"]
 category = st.sidebar.selectbox("Category", categories)
 
+sources_list = ["All"] + sorted(list(set([s.primary_source for s in stories if s.primary_source]))) if stories else ["All"]
+source_filter = st.sidebar.selectbox("Source", sources_list)
+
 min_score = st.sidebar.slider("Minimum Story Score", 0, 100, 0, 5)
 
 sort_by = st.sidebar.selectbox("Sort By", ["Latest", "Potential to Boom (Virality)", "Overall Score"])
@@ -121,6 +124,9 @@ if filtered_stories:
 
     if category != "All":
         filtered_stories = [s for s in filtered_stories if s.category == category]
+
+    if source_filter != "All":
+        filtered_stories = [s for s in filtered_stories if s.primary_source == source_filter]
 
     filtered_stories = [s for s in filtered_stories if s.overall_story_score >= min_score]
 

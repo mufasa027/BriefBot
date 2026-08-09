@@ -31,34 +31,34 @@ Analyze the article and return ONLY valid JSON.
 
 def summarize_article(article):
 
-    response = client.chat.completions.create(
-        model="deepseek/deepseek-chat-v3.1",
-        temperature=0.2,
-        max_tokens=350,
-        messages=[
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT,
-            },
-            {
-                "role": "user",
-                "content": f"""
-Title:
-{article["title"]}
-
-Article:
-{article["summary"]}
-"""
-            }
-        ],
-    )
-
-    result = response.choices[0].message.content.strip()
-    result = re.sub(r"```json|```", "", result).strip()
-
     try:
+        response = client.chat.completions.create(
+            model="deepseek/deepseek-chat",
+            temperature=0.2,
+            max_tokens=350,
+            messages=[
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT,
+                },
+                {
+                    "role": "user",
+                    "content": f"""
+    Title:
+    {article["title"]}
+
+    Article:
+    {article["summary"]}
+    """
+                }
+            ],
+        )
+
+        result = response.choices[0].message.content.strip()
+        result = re.sub(r"```json|```", "", result).strip()
         data = json.loads(result)
-    except Exception:
+    except Exception as e:
+        print(f"API Error: {e}")
         article["category"] = "World"
         article["keywords"] = ""
         article["importance"] = 5

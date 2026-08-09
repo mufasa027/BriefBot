@@ -17,6 +17,10 @@ RSS_FEEDS = {
     "CNN": "http://rss.cnn.com/rss/edition.rss",
     "NPR": "https://feeds.npr.org/1001/rss.xml",
     "Guardian": "https://www.theguardian.com/international/rss",
+    "Hindustan Times": "https://news.google.com/rss/search?q=site:hindustantimes.com",
+    "NDTV": "https://news.google.com/rss/search?q=site:ndtv.com",
+    "Times of India": "https://news.google.com/rss/search?q=site:timesofindia.indiatimes.com",
+    "The Moscow Times": "https://news.google.com/rss/search?q=site:themoscowtimes.com",
 }
 
 POSTS_PER_DAY = 6

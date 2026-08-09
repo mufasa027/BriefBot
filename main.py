@@ -27,7 +27,8 @@ def main():
 
     for i, article in enumerate(articles, start=1):
 
-        print(f"[{i}/{len(articles)}] {article['source']} | {article['title']}")
+        title_safe = article['title'].encode('ascii', 'replace').decode('ascii')
+        print(f"[{i}/{len(articles)}] {article['source']} | {title_safe}")
 
         try:
             summarize_article(article)

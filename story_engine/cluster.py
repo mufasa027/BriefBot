@@ -11,6 +11,10 @@ SOURCE_TRUST_RANK = {
     "Al Jazeera": 7,
     "CNN": 7,
     "NPR": 7,
+    "Hindustan Times": 8,
+    "NDTV": 8,
+    "Times of India": 8,
+    "The Moscow Times": 8,
 }
 
 
