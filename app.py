@@ -9,7 +9,7 @@ from database.diagnostics import run_database_diagnostics
 from ai.ranker import generate_score_explanation
 from database.migrations import create_database
 from services import logging_service
-from services.queue_service import handle_generate_story_action
+from services.queue_service import handle_generate_story_action, transition_article_status
 
 # Initialize database to prevent "no such table" errors on first run
 create_database()
