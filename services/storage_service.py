@@ -97,10 +97,10 @@ def validate_story_assets(story_id, render_path, status="post_ready"):
         except OSError:
             missing.append("render.png (corrupted, breaks Live Preview)")
 
-    # 1.5. Render MP4
+    # 1.5. Render MP4 (Optional - do not fail transaction if missing)
     mp4_path = render_path.replace(".png", ".mp4") if render_path else ""
     if not mp4_path or not os.path.exists(mp4_path) or os.path.getsize(mp4_path) < 1000:
-        missing.append("render.mp4 (missing or empty)")
+        pass # Optional asset, do not append to missing
 
     # 2. Caption TXT (> 10 bytes)
     cap_path = os.path.join(CAPTIONS_DIR, f"caption_{story_id}.txt")
