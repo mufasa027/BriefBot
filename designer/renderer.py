@@ -132,16 +132,24 @@ def draw_headline(canvas, draw, article, layout_plan):
     box_radius = HEADLINE_CONFIG["box_radius"]
     line_gap = HEADLINE_CONFIG["line_gap"]
 
+    # Calculate uniform vertical metrics for this specific font size
+    # We use a string with max ascenders (A, h, l, d) and max descenders (y, j, p, g)
+    _, ref_top, _, ref_bottom = draw.textbbox((0, 0), "Ayjp", font=headline_font)
+    uniform_height = ref_bottom - ref_top
+
     for line in layout_plan.headline_lines:
-        left, top, right, bottom = draw.textbbox((0, 0), line, font=headline_font)
-        text_w = right - left
-        text_h = bottom - top
+        # Get exact horizontal bounds for this specific line
+        left, _, right, _ = draw.textbbox((start_x, current_y), line, font=headline_font)
+
+        # Calculate uniform box relative to current_y
+        box_top = current_y + ref_top
+        box_bottom = current_y + ref_bottom
 
         box_rect = (
-            start_x - padding_x,
-            current_y - padding_y,
-            start_x + text_w + padding_x,
-            current_y + text_h + padding_y + 4,
+            left - padding_x,
+            box_top - padding_y,
+            right + padding_x,
+            box_bottom + padding_y,
         )
 
         draw.rounded_rectangle(
@@ -157,7 +165,7 @@ def draw_headline(canvas, draw, article, layout_plan):
             fill=COLORS["black"],
         )
 
-        current_y += (text_h + padding_y * 2 + line_gap)
+        current_y += (uniform_height + padding_y * 2 + line_gap)
 
 
 def draw_summary(canvas, article, layout_plan):
