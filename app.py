@@ -32,7 +32,7 @@ def get_base64_of_bin_file(bin_file):
     return base64.b64encode(data).decode()
 
 try:
-    bg_base64 = get_base64_of_bin_file("assets/cipherbrief_background.jpg")
+    bg_base64 = get_base64_of_bin_file("assets/cipherbrief_background.svg")
 except:
     bg_base64 = ""
 
@@ -64,7 +64,7 @@ st.markdown("""
 
     [data-testid="stAppViewContainer"] {
         background-color: var(--bg-main) !important;
-        background-image: url("data:image/jpeg;base64,BACKGROUND_BASE64_PLACEHOLDER") !important;
+        background-image: url("data:image/svg+xml;base64,BACKGROUND_BASE64_PLACEHOLDER") !important;
         background-size: cover !important;
         background-attachment: fixed !important;
         background-position: center !important;
