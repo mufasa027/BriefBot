@@ -16,6 +16,22 @@ GROWTH_HASHTAGS_POOL = [
 
 from ai.client import get_ai_client
 
+def fallback_extract_entities(title: str) -> list:
+    """Extracts capitalized words from title as a mathematical fallback for entities."""
+    stops = {"The", "In", "On", "At", "Of", "And", "To", "A", "Is", "For", "With", "As", "By", "From"}
+    words = re.findall(r"\b[A-Z][a-zA-Z0-9_]*\b", str(title))
+    keywords = [w for w in words if w not in stops and len(w) > 2]
+    
+    # Contextual combinations
+    title_lower = str(title).lower()
+    if "russia" in title_lower and "ukraine" in title_lower:
+        keywords.insert(0, "RussiaUkraineWar")
+    elif "israel" in title_lower and "hamas" in title_lower:
+        keywords.insert(0, "IsraelHamasWar")
+        
+    return list(set(keywords))
+
+
 def calculate_coverage_score(num_sources: int, sources_list: list) -> int:
     if num_sources <= 1:
         return 40
@@ -223,9 +239,20 @@ def synthesize_story_post_copy(story: any, max_retries: int = 3) -> dict:
     entities_json_str = story_dict.get("entities_json")
     if entities_json_str:
         try:
-            entities_list = json.loads(entities_json_str)
+            parsed = json.loads(entities_json_str)
+            # Depending on if it's a dict or list, extract values
+            if isinstance(parsed, dict):
+                for k, v in parsed.items():
+                    if isinstance(v, list):
+                        entities_list.extend(v)
+            elif isinstance(parsed, list):
+                entities_list.extend(parsed)
         except Exception:
             pass
+
+    # If DB entities are empty, use mathematical extraction
+    if not entities_list:
+        entities_list = fallback_extract_entities(primary_title)
 
     final_hashtags = format_exact_10_hashtags(
         hashtags_raw,
