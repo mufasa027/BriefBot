@@ -710,9 +710,15 @@ if st.session_state.selected_story_id:
 else:
     if st.session_state.active_page == "Overview":
         components.html("""
-<div id="ist-clock-container" style="margin-bottom:32px; font-family: 'Inter', sans-serif;">
-    <h2 id="ist-clock-time" style="font-size:32px; font-weight:700; color:#F5F7FA; margin-bottom:4px; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 0;">--:--:--</h2>
-    <div id="ist-clock-date" style="color:#9299A5; text-transform:uppercase; font-size:12px; letter-spacing:1px;">--</div>
+<div id="ist-clock-container" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom:32px; font-family: 'Inter', sans-serif;">
+    <div>
+        <h2 id="ist-clock-time" style="font-size:32px; font-weight:700; color:#F5F7FA; margin-bottom:4px; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 0;">--:--:--</h2>
+        <div id="ist-clock-date" style="color:#9299A5; text-transform:uppercase; font-size:12px; letter-spacing:1px;">--</div>
+    </div>
+    <div style="max-width: 600px; text-align: right; color: rgba(255,255,255,0.4); font-size: 13px; font-style: italic; line-height: 1.5; padding-left: 20px;">
+        “The wars will end and the leaders will shake hands, and that old woman will remain waiting for her martyred son, and that girl will wait for her beloved husband, and the children will wait for their heroic father, I do not know who sold the homeland but I know who paid the price.”<br>
+        <span style="font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: rgba(255,255,255,0.25); font-style: normal; margin-top: 6px; display: inline-block;">— Mahmoud Darwish</span>
+    </div>
 </div>
 <script>
     function updateClock() {
@@ -733,7 +739,7 @@ else:
     setInterval(updateClock, 1000);
     updateClock();
 </script>
-""", height=100)
+""", height=120)
         
         m1, m2, m3, m4 = st.columns(4)
         active_count = len([s for s in stories if s.status not in ["rejected"]])
