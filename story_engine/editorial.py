@@ -59,12 +59,20 @@ def evaluate_editorial_recommendation(story: any) -> dict:
 def format_exact_10_hashtags(hashtags_raw: str, category: str = "News", entities: list = None) -> str:
     """
     Enforces EXACTLY 10 hashtags:
-    - 6 article-specific hashtags
+    - 6 article-specific hashtags (prioritizing extracted entities)
     - 4 CipherBrief growth hashtags (from pool)
     """
     found_tags = re.findall(r"#\w+", str(hashtags_raw))
     cleaned = []
     seen = set()
+
+    # FORCE inject entities first
+    if entities:
+        for ent in entities:
+            ent_tag = "#" + re.sub(r'[^A-Za-z0-9]', '', str(ent))
+            if ent_tag.lower() not in seen:
+                seen.add(ent_tag.lower())
+                cleaned.append(ent_tag)
 
     for tag in found_tags:
         clean = f"#{tag.lstrip('#')}"
@@ -211,7 +219,19 @@ def synthesize_story_post_copy(story: any, max_retries: int = 3) -> dict:
                 log_event("AI_SYNTHESIS_RETRY", f"AI synthesis attempt #{attempt} failed ({e}). Retrying...", article_uuid=story_dict.get("story_id"), level="WARNING")
                 time.sleep(1.5 * attempt)
 
-    final_hashtags = format_exact_10_hashtags(hashtags_raw, category=story_dict.get("category", "News"))
+    entities_list = []
+    entities_json_str = story_dict.get("entities_json")
+    if entities_json_str:
+        try:
+            entities_list = json.loads(entities_json_str)
+        except Exception:
+            pass
+
+    final_hashtags = format_exact_10_hashtags(
+        hashtags_raw,
+        category=story_dict.get("category", "News"),
+        entities=entities_list
+    )
 
     return {
         "improved_headline": str(improved_headline).strip(),
