@@ -687,6 +687,11 @@ def render_story_detail(story):
             if has_render:
                 with open(render_path, "rb") as f:
                     st.download_button("Save PNG", f, file_name=f"cipherbrief_{story_id}.png", mime="image/png", use_container_width=True)
+                
+                mp4_path = render_path.replace(".png", ".mp4")
+                if os.path.exists(mp4_path):
+                    with open(mp4_path, "rb") as f2:
+                        st.download_button("Download MP4", f2, file_name=f"cipherbrief_{story_id}.mp4", mime="video/mp4", use_container_width=True)
 
 # ==========================================
 # 8. PAGE ROUTING & RENDERING
