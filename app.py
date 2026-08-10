@@ -27,161 +27,301 @@ st.set_page_config(
 # ==========================================
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-    /* CSS Variables for Premium Dark Theme */
     :root {
-        --bg-main: #0B0E14;
-        --bg-surface: #151A22;
-        --bg-secondary: #151922;
-        --border-color: #242933;
+        --bg-main: #07090D;
+        --bg-surface: rgba(17, 21, 29, 0.72);
+        --bg-secondary: rgba(21, 25, 34, 0.6);
+        --border-color: rgba(255, 255, 255, 0.07);
         --text-primary: #F5F7FA;
         --text-secondary: #9299A5;
         --text-muted: #666D78;
+        
         --accent-blue: #4DA3FF;
+        --accent-blue-glow: rgba(77, 163, 255, 0.15);
         --accent-success: #3DDC97;
-        --accent-warning: #F4C95D;
+        --accent-success-glow: rgba(61, 220, 151, 0.15);
         --accent-danger: #FF5C5C;
+        --accent-danger-glow: rgba(255, 92, 92, 0.15);
     }
 
-    /* Base Typography & Background */
     html, body, [class*="css"] {
         font-family: 'Inter', sans-serif !important;
-        background-color: var(--bg-main) !important;
         color: var(--text-primary) !important;
     }
 
-    /* Hide Streamlit Chrome */
+    [data-testid="stAppViewContainer"] {
+        background-color: var(--bg-main) !important;
+        background-image: 
+            radial-gradient(circle at 15% 10%, rgba(50,120,255,0.08), transparent 40%),
+            radial-gradient(circle at 85% 80%, rgba(0,220,255,0.05), transparent 40%),
+            linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px) !important;
+        background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
+    }
+
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
+    header {background: transparent !important;}
     
-    /* Block container adjustments */
     .block-container {
         padding-top: 2rem !important;
-        padding-bottom: 2rem !important;
+        padding-bottom: 4rem !important;
         max-width: 1400px;
     }
 
-    /* Streamlit sidebar */
     [data-testid="stSidebar"] {
-        background-color: var(--bg-surface) !important;
+        background-color: rgba(11, 14, 20, 0.8) !important;
         border-right: 1px solid var(--border-color);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
     }
     
-    /* Metric Cards */
+    .sidebar-brand {
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        padding-bottom: 16px;
+    }
+    .sidebar-brand-subtitle {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.2em;
+        color: var(--accent-blue);
+        margin-top: -12px;
+        margin-bottom: 24px;
+    }
+    .nav-header {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.16em;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        margin-top: 24px;
+        margin-bottom: 12px;
+    }
+
     [data-testid="metric-container"] {
         background-color: var(--bg-surface);
         border: 1px solid var(--border-color);
-        border-radius: 4px;
+        border-radius: 8px;
         padding: 16px 20px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        backdrop-filter: blur(12px);
+        position: relative;
+        overflow: hidden;
+    }
+    [data-testid="metric-container"]::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background-color: var(--accent-blue);
+        opacity: 0.8;
     }
     [data-testid="metric-container"] label {
         color: var(--text-secondary) !important;
-        font-size: 13px !important;
-        font-weight: 500;
+        font-size: 11px !important;
+        font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.1em;
     }
     [data-testid="metric-container"] div[data-testid="stMetricValue"] {
         color: var(--text-primary) !important;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 32px !important;
+        letter-spacing: -0.02em;
     }
 
-    /* Custom Containers & Borders */
-    div[data-testid="stVerticalBlock"] div[data-testid="stVerticalBlockBorderWrapper"] {
+    div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
         background-color: var(--bg-surface);
         border: 1px solid var(--border-color) !important;
-        border-radius: 6px !important;
+        border-radius: 8px !important;
         padding: 1rem;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+        backdrop-filter: blur(12px);
     }
 
-    /* Buttons */
     .stButton > button {
         background-color: var(--bg-secondary) !important;
         color: var(--text-primary) !important;
         border: 1px solid var(--border-color) !important;
-        border-radius: 4px !important;
+        border-radius: 6px !important;
         font-weight: 500 !important;
-        transition: all 0.2s ease;
+        letter-spacing: 0.05em !important;
+        text-transform: uppercase !important;
+        font-size: 12px !important;
+        padding: 0.5rem 1rem !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
     .stButton > button:hover {
         border-color: var(--accent-blue) !important;
-        background-color: var(--bg-surface) !important;
+        background-color: rgba(77, 163, 255, 0.05) !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
-    /* Primary Button override */
     .stButton > button[kind="primary"] {
-        background-color: var(--accent-blue) !important;
-        color: #000 !important;
-        border: none !important;
+        background-color: rgba(77, 163, 255, 0.1) !important;
+        color: var(--accent-blue) !important;
+        border: 1px solid var(--accent-blue) !important;
+        box-shadow: 0 4px 16px var(--accent-blue-glow);
     }
     .stButton > button[kind="primary"]:hover {
-        opacity: 0.9;
+        background-color: var(--accent-blue) !important;
+        color: #000 !important;
     }
 
-    /* Status Badges */
     .badge {
-        display: inline-block;
-        padding: 2px 8px;
-        border-radius: 12px;
-        font-size: 11px;
-        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 10px;
+        font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: 0.5px;
+        letter-spacing: 0.1em;
     }
-    .badge-new { background-color: #242933; color: #F5F7FA; border: 1px solid #3b4252; }
-    .badge-post_ready { background-color: rgba(77, 163, 255, 0.15); color: #4DA3FF; border: 1px solid rgba(77, 163, 255, 0.3); }
-    .badge-approved { background-color: rgba(61, 220, 151, 0.15); color: #3DDC97; border: 1px solid rgba(61, 220, 151, 0.3); }
-    .badge-rejected { background-color: rgba(255, 92, 92, 0.15); color: #FF5C5C; border: 1px solid rgba(255, 92, 92, 0.3); }
+    .badge::before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        margin-right: 6px;
+    }
+    .badge-new { background-color: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid rgba(255,255,255,0.1); }
+    .badge-new::before { background-color: var(--text-secondary); }
+    .badge-post_ready { background-color: var(--accent-blue-glow); color: var(--accent-blue); border: 1px solid rgba(77, 163, 255, 0.3); }
+    .badge-post_ready::before { background-color: var(--accent-blue); box-shadow: 0 0 6px var(--accent-blue); }
+    .badge-approved { background-color: var(--accent-success-glow); color: var(--accent-success); border: 1px solid rgba(61, 220, 151, 0.3); }
+    .badge-approved::before { background-color: var(--accent-success); box-shadow: 0 0 6px var(--accent-success); }
+    .badge-rejected { background-color: var(--accent-danger-glow); color: var(--accent-danger); border: 1px solid rgba(255, 92, 92, 0.3); }
+    .badge-rejected::before { background-color: var(--accent-danger); box-shadow: 0 0 6px var(--accent-danger); }
 
-    /* Story Card Typography */
+    .story-card-wrapper {
+        background-color: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.2);
+        backdrop-filter: blur(12px);
+        margin-bottom: 8px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .story-card-wrapper:hover {
+        border-color: rgba(255,255,255,0.15);
+        transform: translateY(-2px);
+    }
+    .story-card-edge-glow-approved { border-left: 3px solid var(--accent-success); }
+    .story-card-edge-glow-rejected { border-left: 3px solid var(--accent-danger); }
+    .story-card-edge-glow-post_ready { border-left: 3px solid var(--accent-blue); }
+    .story-card-edge-glow-new { border-left: 3px solid rgba(255,255,255,0.1); }
+    
     .story-headline {
         font-size: 18px;
-        font-weight: 600;
+        font-weight: 700;
         margin-bottom: 8px;
-        line-height: 1.4;
+        line-height: 1.3;
+        letter-spacing: -0.01em;
     }
     .story-meta {
-        font-size: 12px;
+        font-size: 11px;
         color: var(--text-secondary);
-        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 600;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
     .story-summary {
         font-size: 14px;
-        color: var(--text-muted);
-        line-height: 1.5;
-        margin-bottom: 12px;
-    }
-    
-    /* Top Header */
-    .app-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-end;
-        border-bottom: 1px solid var(--border-color);
-        padding-bottom: 16px;
-        margin-bottom: 24px;
-    }
-    .app-title {
-        font-size: 24px;
-        font-weight: 700;
-        letter-spacing: 1px;
-        margin: 0;
-        line-height: 1;
-    }
-    .app-subtitle {
-        font-size: 12px;
         color: var(--text-secondary);
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-top: 6px;
-    }
-    .system-status {
-        font-size: 12px;
-        color: var(--accent-success);
-        font-weight: 500;
+        line-height: 1.5;
+        margin-bottom: 20px;
     }
     
+    .score-container {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+    }
+    .score-value {
+        font-size: 28px;
+        font-weight: 800;
+        color: var(--accent-blue);
+        line-height: 1;
+        letter-spacing: -0.03em;
+    }
+    .score-max {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+    .score-label {
+        font-size: 9px;
+        font-weight: 700;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        margin-top: 4px;
+    }
+
+    .preview-stage {
+        background-color: rgba(0,0,0,0.5);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 40px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-image: 
+            linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+        background-size: 20px 20px;
+        box-shadow: inset 0 0 60px rgba(0,0,0,0.8);
+    }
+    .preview-stage img {
+        border-radius: 8px;
+        box-shadow: 0 24px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+    }
+
+    .editorial-panel {
+        background-color: rgba(11, 14, 20, 0.6);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: inset 0 2px 10px rgba(0,0,0,0.2);
+    }
+    
+    .section-header {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 8px;
+        margin-bottom: 16px;
+    }
+    .section-title {
+        font-size: 20px;
+        font-weight: 600;
+        letter-spacing: -0.01em;
+        margin-bottom: 24px;
+        color: var(--text-primary);
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -229,7 +369,11 @@ st.markdown("<hr style='border-color: var(--border-color); margin-top: 16px; mar
 # 5. SIDEBAR (NAVIGATION & FILTERS)
 # ==========================================
 with st.sidebar:
-    st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Navigation</h3>", unsafe_allow_html=True)
+    st.markdown("""
+    <div class="sidebar-brand">CIPHERBRIEF</div>
+    <div class="sidebar-brand-subtitle">NEWS INTELLIGENCE</div>
+    <div class="nav-header">NAVIGATION</div>
+    """, unsafe_allow_html=True)
     
     # Custom Navigation
     page_options = {
@@ -273,7 +417,7 @@ with st.sidebar:
 
     st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
     
-    st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Filters</h3>", unsafe_allow_html=True)
+    st.markdown("<div class='nav-header'>EDITORIAL FEED</div>", unsafe_allow_html=True)
     
     with st.form("filter_form"):
         search = st.text_input("Search", placeholder="Search stories...")
@@ -347,37 +491,48 @@ def render_story_card(story):
     current_status = str(story.status or "new").lower()
     
     badge_class = f"badge-{current_status}" if current_status in ["new", "post_ready", "approved", "rejected"] else "badge-new"
+    edge_class = f"story-card-edge-glow-{current_status}" if current_status in ["new", "post_ready", "approved", "rejected"] else "story-card-edge-glow-new"
     
     primary_art = story.articles[0] if story.articles else {}
     summary = primary_art.get('summary', '')
     if len(summary) > 150:
         summary = summary[:147] + "..."
         
-    with st.container(border=True):
+    with st.container():
         st.markdown(f"""
-        <div style='display:flex; justify-content:space-between; align-items:flex-start;'>
-            <div>
-                <div class='story-headline'>{story.story_title}</div>
-                <div class='story-meta'>{story.primary_source} &nbsp;·&nbsp; {story.first_published[:16] if story.first_published else ''}</div>
+        <div class='story-card-wrapper {edge_class}'>
+            <div style='display:flex; justify-content:space-between; align-items:flex-start;'>
+                <div style='flex: 1; padding-right: 16px;'>
+                    <div class='story-meta'>
+                        <span style='color:var(--text-primary);'>{story.primary_source}</span>
+                        <span style='color:var(--border-color);'>|</span>
+                        <span>{story.first_published[:16] if story.first_published else ''}</span>
+                    </div>
+                    <div class='story-headline'>{story.story_title}</div>
+                </div>
+                <div style='text-align:right; margin-left:16px;'>
+                    <div class='score-container'>
+                        <span class='score-value'>{story.overall_story_score}</span>
+                        <span class='score-max'>/100</span>
+                    </div>
+                    <div class='score-label'>SCORE</div>
+                </div>
             </div>
-            <div style='text-align:right;'>
-                <div style='font-size:24px; font-weight:700; color:var(--accent-blue); line-height:1;'>{story.overall_story_score}</div>
-                <div style='font-size:10px; color:var(--text-muted); margin-bottom:8px;'>SCORE</div>
-            </div>
-        </div>
-        <div class='story-summary'>{summary}</div>
-        <div style='display:flex; justify-content:space-between; align-items:center;'>
-            <div>
-                <span class='badge {badge_class}'>{current_status.upper().replace('_', ' ')}</span>
-                <span style='margin-left:12px; font-size:12px; color:var(--text-secondary); text-transform:uppercase;'>{story.category}</span>
+            <div class='story-summary'>{summary}</div>
+            <div style='display:flex; justify-content:space-between; align-items:center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;'>
+                <div style='display:flex; align-items:center; gap: 12px;'>
+                    <span class='badge {badge_class}'>{current_status.upper().replace('_', ' ')}</span>
+                    <span style='font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; font-weight:600;'>{story.category}</span>
+                </div>
             </div>
         </div>
         """, unsafe_allow_html=True)
         
-        # Add a button underneath the HTML rendering
-        if st.button("Review Story", key=f"btn_review_{story.story_id}"):
-            st.session_state.selected_story_id = story.story_id
-            st.rerun()
+        col_dummy, col_btn = st.columns([4,1])
+        with col_btn:
+            if st.button("Review", key=f"btn_review_{story.story_id}", use_container_width=True):
+                st.session_state.selected_story_id = story.story_id
+                st.rerun()
 
 def render_story_detail(story):
     """Renders the professional detail/workspace view for a single story."""
@@ -393,7 +548,6 @@ def render_story_detail(story):
     
     c1, c2 = st.columns([1, 1.5], gap="large")
     
-    # Check assets
     render_path = story.rendered_image_path or get_render_path_for_uuid(story_id)
     has_render = bool(render_path and os.path.exists(render_path) and os.path.getsize(render_path) > 100)
     
@@ -403,7 +557,6 @@ def render_story_detail(story):
     hash_p = os.path.join(HASHTAGS_DIR, f"hashtags_{story_id}.txt")
     has_hashtags_file = os.path.exists(hash_p) and os.path.getsize(hash_p) > 10
 
-    # Load missing texts from files
     caption_text = story.caption
     if (not caption_text or pd.isna(caption_text)) and has_caption_file:
         try:
@@ -417,33 +570,49 @@ def render_story_detail(story):
         except OSError: pass
 
     with c1:
-        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-bottom:16px;'>POST PREVIEW</h3>", unsafe_allow_html=True)
+        st.markdown("<div class='section-header'>POST PREVIEW</div>", unsafe_allow_html=True)
         if current_status == "approved":
-            st.markdown("<div style='background:rgba(61, 220, 151, 0.1); border:1px solid #3DDC97; color:#3DDC97; padding:12px; border-radius:6px; text-align:center; font-weight:600; margin-bottom:16px;'>✓ APPROVED — READY TO POST</div>", unsafe_allow_html=True)
+            st.markdown("<div style='background:rgba(61, 220, 151, 0.1); border:1px solid #3DDC97; color:#3DDC97; padding:12px; border-radius:6px; text-align:center; font-weight:600; margin-bottom:16px; letter-spacing:0.1em; font-size:12px;'>● APPROVED — READY TO POST</div>", unsafe_allow_html=True)
         elif current_status == "post_ready":
-            st.markdown("<div style='background:rgba(77, 163, 255, 0.1); border:1px solid #4DA3FF; color:#4DA3FF; padding:12px; border-radius:6px; text-align:center; font-weight:600; margin-bottom:16px;'>POST READY</div>", unsafe_allow_html=True)
+            st.markdown("<div style='background:rgba(77, 163, 255, 0.1); border:1px solid #4DA3FF; color:#4DA3FF; padding:12px; border-radius:6px; text-align:center; font-weight:600; margin-bottom:16px; letter-spacing:0.1em; font-size:12px;'>● POST READY</div>", unsafe_allow_html=True)
 
         if has_render:
             try:
                 from PIL import Image
                 img = Image.open(render_path)
+                st.markdown("<div class='preview-stage'>", unsafe_allow_html=True)
                 st.image(img, use_container_width=True)
-                st.markdown("<div style='text-align:center; font-size:11px; color:#666D78; margin-top:8px;'>1080 × 1920 · PNG</div>", unsafe_allow_html=True)
+                st.markdown("</div>", unsafe_allow_html=True)
+                st.markdown("<div style='text-align:center; font-size:11px; color:#666D78; margin-top:8px; letter-spacing:0.1em;'>1080 × 1920 PNG</div>", unsafe_allow_html=True)
             except OSError:
                 st.error("Image exists but could not be loaded.")
         else:
-            st.info("Visual render not yet generated. Synthesize post to create.")
+            st.markdown("""
+            <div class='preview-stage' style='height: 400px; flex-direction: column;'>
+                <div style='color:var(--text-muted); font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em;'>Visual render not generated</div>
+                <div style='color:var(--border-color); font-size:40px; margin-top:16px;'>●</div>
+            </div>
+            """, unsafe_allow_html=True)
 
     with c2:
-        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-bottom:16px;'>EDITORIAL BRIEF</h3>", unsafe_allow_html=True)
+        st.markdown("<div class='section-header'>EDITORIAL BRIEF</div>", unsafe_allow_html=True)
         
         with st.container(border=True):
             st.markdown(f"""
-            <div style='font-size:22px; font-weight:600; margin-bottom:12px;'>{story.story_title}</div>
-            <div style='display:flex; justify-content:space-between; border-bottom:1px solid #242933; padding-bottom:12px; margin-bottom:12px;'>
-                <div><span style='color:#9299A5; font-size:12px;'>SOURCE</span><br>{story.primary_source}</div>
-                <div><span style='color:#9299A5; font-size:12px;'>CATEGORY</span><br>{story.category}</div>
-                <div><span style='color:#9299A5; font-size:12px;'>SCORE</span><br><span style='color:#4DA3FF; font-weight:700;'>{story.overall_story_score}/100</span></div>
+            <div class='story-headline' style='font-size:24px; margin-bottom:20px;'>{story.story_title}</div>
+            <div style='display:flex; justify-content:space-between; border-bottom:1px solid var(--border-color); padding-bottom:16px; margin-bottom:16px;'>
+                <div>
+                    <div style='color:var(--text-muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:4px;'>SOURCE</div>
+                    <div style='font-size:14px; color:var(--text-primary); font-weight:500;'>{story.primary_source}</div>
+                </div>
+                <div>
+                    <div style='color:var(--text-muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:4px;'>CATEGORY</div>
+                    <div style='font-size:14px; color:var(--text-primary); font-weight:500;'>{story.category}</div>
+                </div>
+                <div>
+                    <div style='color:var(--text-muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:4px;'>SCORE</div>
+                    <div class='score-container'><span class='score-value' style='font-size:20px;'>{story.overall_story_score}</span><span class='score-max'>/100</span></div>
+                </div>
             </div>
             """, unsafe_allow_html=True)
             
@@ -455,35 +624,31 @@ def render_story_detail(story):
 
         st.markdown("<br>", unsafe_allow_html=True)
         
-        # Caption section
-        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-bottom:8px;'>CAPTION</h3>", unsafe_allow_html=True)
+        st.markdown("<div class='section-header'>CAPTION</div>", unsafe_allow_html=True)
         if caption_text:
-            st.code(caption_text, language="text")
+            st.markdown(f"<div class='editorial-panel'>{caption_text.replace(chr(10), '<br>')}</div>", unsafe_allow_html=True)
         else:
             st.info("No caption generated yet.")
             
-        # Hashtags section
-        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-top:24px; margin-bottom:8px;'>HASHTAGS</h3>", unsafe_allow_html=True)
+        st.markdown("<br><div class='section-header'>HASHTAGS</div>", unsafe_allow_html=True)
         if hashtags_text:
-            # Display as a code block for easy copying
-            st.code(hashtags_text, language="text")
+            st.markdown(f"<div class='editorial-panel' style='color:var(--accent-blue); font-weight:500;'>{hashtags_text}</div>", unsafe_allow_html=True)
         else:
             st.info("No hashtags generated yet.")
             
-        st.markdown("<hr style='border-color: #242933;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color: #242933; margin: 32px 0;'>", unsafe_allow_html=True)
         
-        # Action Buttons
-        st.markdown("<h3 style='font-size:14px; color:#9299A5; margin-bottom:16px;'>WORKFLOW ACTIONS</h3>", unsafe_allow_html=True)
+        st.markdown("<div class='section-header'>WORKFLOW ACTIONS</div>", unsafe_allow_html=True)
         
         col_a1, col_a2, col_a3, col_a4 = st.columns(4)
-        
         with col_a1:
             btn_label = "Re-synthesize" if has_render else "Synthesize"
-            if st.button(btn_label, key=f"synth_btn_{story_id}_{has_render}", disabled=(current_status in ["approved", "rejected"]), use_container_width=True):
+            if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}_{has_render}", disabled=(current_status in ["approved", "rejected"]), use_container_width=True):
                 with st.status("Synthesizing Post...", expanded=True) as status:
                     st.write("Analyzing story metrics...")
                     st.write("Generating editorial copy...")
                     st.write("Rendering 1080x1920 layout...")
+                    from services.queue_service import handle_generate_story_action, transition_article_status
                     updated_s, err = handle_generate_story_action(story)
                     if err:
                         status.update(label=f"Generation Error: {err}", state="error")
@@ -495,13 +660,15 @@ def render_story_detail(story):
                         st.rerun()
                         
         with col_a2:
-            if st.button("Approve", disabled=(current_status != "post_ready" or not has_render), use_container_width=True):
+            if st.button("Approve", type="primary", disabled=(current_status != "post_ready" or not has_render), use_container_width=True):
+                from services.queue_service import transition_article_status
                 transition_article_status(s_dict, "approved")
                 st.cache_data.clear()
                 st.rerun()
                 
         with col_a3:
             if st.button("Reject", disabled=(current_status not in ["new", "post_ready"]), use_container_width=True):
+                from services.queue_service import transition_article_status
                 transition_article_status(s_dict, "rejected")
                 st.cache_data.clear()
                 st.session_state.selected_story_id = None
@@ -510,14 +677,7 @@ def render_story_detail(story):
         with col_a4:
             if has_render:
                 with open(render_path, "rb") as f:
-                    st.download_button("Download Image", f, file_name=f"cipherbrief_{story_id}.png", mime="image/png", use_container_width=True)
-                
-                mp4_path = render_path.replace(".png", ".mp4")
-                if os.path.exists(mp4_path):
-                    with open(mp4_path, "rb") as f2:
-                        st.download_button("Download MP4 Reel", f2, file_name=f"cipherbrief_{story_id}.mp4", mime="video/mp4", use_container_width=True)
-
-
+                    st.download_button("Save PNG", f, file_name=f"cipherbrief_{story_id}.png", mime="image/png", use_container_width=True)
 
 # ==========================================
 # 8. PAGE ROUTING & RENDERING
@@ -572,7 +732,7 @@ else:
         m3.metric("Approved Posts", approved_count)
         m4.metric("Avg. Story Score", avg_score)
         
-        st.markdown("<br><h3 style='font-size:20px; font-weight:600; margin-bottom:16px;'>Top Stories</h3>", unsafe_allow_html=True)
+        st.markdown("<br><div class='section-header'>TOP STORIES</div><div class='section-title'>Latest high-priority developments</div>", unsafe_allow_html=True)
         
         # Show top 6 stories sorted by score from the filtered subset
         top_stories = sorted(filtered_stories, key=lambda s: s.overall_story_score, reverse=True)[:6]
@@ -586,7 +746,7 @@ else:
 
     else:
         # All Stories, Post Ready, or Approved Pages
-        st.markdown(f"<h2 style='font-size:24px; font-weight:600; margin-bottom:24px;'>{st.session_state.active_page}</h2>", unsafe_allow_html=True)
+        st.markdown(f"<div class='section-header'>{st.session_state.active_page.upper()}</div><div class='section-title'>Live News Cycle</div>", unsafe_allow_html=True)
         
         if not filtered_stories:
             if st.session_state.active_page == "Post Ready":
