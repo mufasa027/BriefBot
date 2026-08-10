@@ -1,0 +1,47 @@
+
+CIPHERBRIEF PREMIUM UX/UI SPECIFICATION
+==================================================
+
+This document outlines the visual design architecture implemented in the Streamlit application (app.py) to achieve the "Dark Cinematic Newsroom" aesthetic.
+
+1. GLOBAL THEMING
+- Typography: Inter font family used globally with uppercase tight-tracking for labels.
+- Base Background: #07090D
+- Surface Panels: rgba(17, 21, 29, 0.72)
+- Text Primary: #F5F7FA
+- Text Secondary: #9299A5
+- Accent Color: #4DA3FF (Blue)
+
+2. ATMOSPHERIC BACKGROUND
+- A multi-layered CSS background is applied to the main Streamlit container.
+- Uses two subtle radial gradients (blue and cyan) simulating soft atmospheric lighting.
+- A faint CSS grid pattern (linear-gradient) creates a cinematic "design tool" stage.
+
+3. GLASSMORPHISM (ELEVATED PANELS)
+- Key containers (story cards, metric KPIs, sidebar) utilize `backdrop-filter: blur(12px)`.
+- Replaces standard flat cards with elevated "glass" elements featuring soft drop shadows (0 12px 32px rgba(0,0,0,0.2)).
+
+4. NAVIGATION & BRANDING
+- Sidebar features a heavy blur (20px) to float over the background.
+- "CIPHERBRIEF" wordmark styling with bold tracking (0.15em).
+- Header features an illuminated "SYSTEM OPERATIONAL" green badge.
+
+5. STORY CARDS
+- Cards feature dynamic edge-glows (3px left border) indicating workflow status:
+  * Green: Approved
+  * Blue: Post Ready
+  * Red: Rejected
+  * White/Subtle: New
+- Score visualization uses large typography paired with uppercase tracked-out labels ("SCORE").
+
+6. POST DETAIL PAGE
+- Live Preview Stage: The 1080x1920 image is wrapped in a dark, grid-lined stage container with a heavy inner shadow to mimic a professional image-editing workspace.
+- Editorial Brief Layout: Split columns cleanly separate AI analysis from visual generation.
+- Caption/Hashtags: Wrapped in custom dark inset panels to mimic a CMS input field.
+
+7. BUTTONS & MICRO-INTERACTIONS
+- Streamlit default buttons restyled to look tactile.
+- Hover states include a subtle 1px translation (transform: translateY(-1px)).
+- Primary action buttons ("Synthesize", "Approve") emit a soft colored box-shadow glow.
+
+
