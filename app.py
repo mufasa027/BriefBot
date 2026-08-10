@@ -321,7 +321,7 @@ if filtered_stories:
     filtered_stories = [s for s in filtered_stories if s.overall_story_score >= min_score]
     
     # Sort
-    sort_by = st.selectbox("Sort By", ["Latest", "Score: High to Low", "Score: Low to High"])
+    sort_by = st.selectbox("Sort By", ["Latest", "Highest Reach Expectancy", "Most Cross-Verified", "Needs Review (Low Score)"])
     if sort_by == "Latest":
         def get_ts(s):
             try:
@@ -330,9 +330,11 @@ if filtered_stories:
             except:
                 return 0
         filtered_stories = sorted(filtered_stories, key=get_ts, reverse=True)
-    elif sort_by == "Score: High to Low":
+    elif sort_by == "Highest Reach Expectancy":
         filtered_stories = sorted(filtered_stories, key=lambda s: s.overall_story_score, reverse=True)
-    elif sort_by == "Score: Low to High":
+    elif sort_by == "Most Cross-Verified":
+        filtered_stories = sorted(filtered_stories, key=lambda s: s.num_sources, reverse=True)
+    elif sort_by == "Needs Review (Low Score)":
         filtered_stories = sorted(filtered_stories, key=lambda s: s.overall_story_score)
 
 
