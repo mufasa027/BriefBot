@@ -25,14 +25,25 @@ st.set_page_config(
 # ==========================================
 # 1. GLOBAL CSS & THEMING
 # ==========================================
+import base64
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, "rb") as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+try:
+    bg_base64 = get_base64_of_bin_file("assets/cipherbrief_background.jpg")
+except:
+    bg_base64 = ""
+
 st.markdown("""
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
     :root {
         --bg-main: #07090D;
-        --bg-surface: rgba(17, 21, 29, 0.72);
-        --bg-secondary: rgba(21, 25, 34, 0.6);
+        --bg-surface: rgba(10, 13, 18, 0.82);
+        --bg-secondary: rgba(10, 13, 18, 0.6);
         --border-color: rgba(255, 255, 255, 0.07);
         --text-primary: #F5F7FA;
         --text-secondary: #9299A5;
@@ -53,12 +64,10 @@ st.markdown("""
 
     [data-testid="stAppViewContainer"] {
         background-color: var(--bg-main) !important;
-        background-image: 
-            radial-gradient(circle at 15% 10%, rgba(50,120,255,0.08), transparent 40%),
-            radial-gradient(circle at 85% 80%, rgba(0,220,255,0.05), transparent 40%),
-            linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px) !important;
-        background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px !important;
+        background-image: url("data:image/jpeg;base64,BACKGROUND_BASE64_PLACEHOLDER") !important;
+        background-size: cover !important;
+        background-attachment: fixed !important;
+        background-position: center !important;
     }
 
     #MainMenu {visibility: hidden;}
@@ -323,7 +332,7 @@ st.markdown("""
         color: var(--text-primary);
     }
 </style>
-""", unsafe_allow_html=True)
+""".replace("BACKGROUND_BASE64_PLACEHOLDER", bg_base64), unsafe_allow_html=True)
 
 
 # ==========================================
