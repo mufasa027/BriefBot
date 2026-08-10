@@ -652,7 +652,7 @@ def render_story_detail(story):
         col_a1, col_a2, col_a3, col_a4 = st.columns(4)
         with col_a1:
             btn_label = "Re-synthesize" if has_render else "Synthesize"
-            if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}_{has_render}", disabled=(current_status in ["approved", "rejected"]), use_container_width=True):
+            if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}_{has_render}", use_container_width=True):
                 with st.status("Synthesizing Post...", expanded=True) as status:
                     st.write("Analyzing story metrics...")
                     st.write("Generating editorial copy...")
