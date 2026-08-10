@@ -69,6 +69,14 @@ st.markdown("""
         background-attachment: fixed !important;
         background-position: center !important;
     }
+    
+    @keyframes cinematicFadeIn {
+        from { opacity: 0; transform: translateY(12px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .block-container {
+        animation: cinematicFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
 
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
@@ -177,6 +185,9 @@ st.markdown("""
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
+    .stButton > button:active {
+        transform: scale(0.97) !important;
+    }
     .stButton > button[kind="primary"] {
         background-color: rgba(77, 163, 255, 0.1) !important;
         color: var(--accent-blue) !important;
@@ -186,6 +197,9 @@ st.markdown("""
     .stButton > button[kind="primary"]:hover {
         background-color: var(--accent-blue) !important;
         color: #000 !important;
+    }
+    .stButton > button[kind="primary"]:active {
+        transform: scale(0.97) !important;
     }
 
     .badge {
