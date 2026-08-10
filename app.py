@@ -71,11 +71,11 @@ st.markdown("""
     }
     
     @keyframes cinematicFadeIn {
-        from { opacity: 0; transform: translateY(12px); }
+        from { opacity: 0; transform: translateY(16px); }
         to { opacity: 1; transform: translateY(0); }
     }
-    .block-container {
-        animation: cinematicFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    div[data-testid="stMainBlockContainer"] {
+        animation: cinematicFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     #MainMenu {visibility: hidden;}
@@ -186,7 +186,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
     .stButton > button:active {
-        transform: scale(0.97) !important;
+        transform: scale(0.94) !important;
     }
     .stButton > button[kind="primary"] {
         background-color: rgba(77, 163, 255, 0.1) !important;
@@ -199,7 +199,7 @@ st.markdown("""
         color: #000 !important;
     }
     .stButton > button[kind="primary"]:active {
-        transform: scale(0.97) !important;
+        transform: scale(0.94) !important;
     }
 
     .badge {
