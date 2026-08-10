@@ -635,13 +635,13 @@ def render_story_detail(story):
         
         st.markdown("<div class='section-header'>CAPTION</div>", unsafe_allow_html=True)
         if caption_text:
-            st.markdown(f"<div class='editorial-panel'>{caption_text.replace(chr(10), '<br>')}</div>", unsafe_allow_html=True)
+            st.code(caption_text, language=None)
         else:
             st.info("No caption generated yet.")
             
         st.markdown("<br><div class='section-header'>HASHTAGS</div>", unsafe_allow_html=True)
         if hashtags_text:
-            st.markdown(f"<div class='editorial-panel' style='color:var(--accent-blue); font-weight:500;'>{hashtags_text}</div>", unsafe_allow_html=True)
+            st.code(hashtags_text, language=None)
         else:
             st.info("No hashtags generated yet.")
             
