@@ -364,6 +364,43 @@ st.markdown("""
             padding: 0.75rem !important;
         }
     }
+
+    /* 1. Custom Dark-Mode Scrollbars */
+    ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    /* 2. Interactive Hover Lifts */
+    div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+        transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        border-color: rgba(77, 163, 255, 0.2) !important;
+    }
+
+    /* 5. Skeleton Loading / Pulse Effects */
+    @keyframes pulseGlow {
+        0% { opacity: 1; box-shadow: 0 0 0 0 rgba(77, 163, 255, 0.4); }
+        50% { opacity: 0.8; box-shadow: 0 0 0 10px rgba(77, 163, 255, 0); }
+        100% { opacity: 1; box-shadow: 0 0 0 0 rgba(77, 163, 255, 0); }
+    }
+    .processing-pulse {
+        animation: pulseGlow 2s infinite cubic-bezier(0.4, 0, 0.2, 1) !important;
+        border-color: var(--accent-blue) !important;
+    }
 </style>
 """.replace("BACKGROUND_BASE64_PLACEHOLDER", bg_base64), unsafe_allow_html=True)
 
@@ -686,25 +723,24 @@ def render_story_detail(story):
         with col_a1:
             btn_label = "Re-synthesize" if has_render else "Synthesize"
             if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}_{has_render}", use_container_width=True):
-                with st.status("Synthesizing Post...", expanded=True) as status:
-                    st.write("Analyzing story metrics...")
-                    st.write("Generating editorial copy...")
-                    st.write("Rendering 1080x1920 layout...")
-                    from services.queue_service import handle_generate_story_action, transition_article_status
-                    updated_s, err = handle_generate_story_action(story)
-                    if err:
-                        status.update(label=f"Generation Error: {err}", state="error")
-                    else:
-                        transition_article_status(s_dict, "post_ready")
-                        status.update(label="Post Synthesized Successfully", state="complete")
-                        time.sleep(1)
-                        st.cache_data.clear()
-                        st.rerun()
+                st.toast("Synthesizing Post... 🔄", icon="⏳")
+                from services.queue_service import handle_generate_story_action, transition_article_status
+                updated_s, err = handle_generate_story_action(story)
+                if err:
+                    st.toast(f"Generation Error: {err}", icon="❌")
+                else:
+                    transition_article_status(s_dict, "post_ready")
+                    st.toast("Post Synthesized Successfully! ✅", icon="✨")
+                    time.sleep(1.5)
+                    st.cache_data.clear()
+                    st.rerun()
                         
         with col_a2:
             if st.button("Approve", type="primary", disabled=(current_status != "post_ready" or not has_render), use_container_width=True):
                 from services.queue_service import transition_article_status
                 transition_article_status(s_dict, "approved")
+                st.toast("Post Approved and Ready! 🚀", icon="✅")
+                time.sleep(1)
                 st.cache_data.clear()
                 st.rerun()
                 
@@ -712,6 +748,8 @@ def render_story_detail(story):
             if st.button("Reject", disabled=(current_status not in ["new", "post_ready"]), use_container_width=True):
                 from services.queue_service import transition_article_status
                 transition_article_status(s_dict, "rejected")
+                st.toast("Story Rejected.", icon="🗑️")
+                time.sleep(1)
                 st.cache_data.clear()
                 st.session_state.selected_story_id = None
                 st.rerun()
@@ -816,9 +854,9 @@ else:
         if not top_stories:
             st.info("NO STORIES YET. Adjust your filters or wait for the next news cycle.")
         else:
-            r1, r2 = st.columns(2)
+            cols = st.columns(3)
             for i, story in enumerate(top_stories):
-                with (r1 if i % 2 == 0 else r2):
+                with cols[i % 3]:
                     render_story_card(story)
 
     else:
@@ -841,8 +879,8 @@ else:
             end_idx = start_idx + PER_PAGE
             paged_stories = filtered_stories[start_idx:end_idx]
             
-            c1, c2 = st.columns(2)
+            cols = st.columns(3)
             for i, story in enumerate(paged_stories):
-                with (c1 if i % 2 == 0 else c2):
+                with cols[i % 3]:
                     render_story_card(story)
 
