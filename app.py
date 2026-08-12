@@ -913,7 +913,14 @@ else:
         else:
             PER_PAGE = 10
             pages = max(1, math.ceil(len(filtered_stories) / PER_PAGE))
-            page = st.number_input("Page Number", min_value=1, max_value=pages, value=1, step=1)
+            
+            page_key = f"page_{st.session_state.active_page}"
+            if page_key not in st.session_state:
+                st.session_state[page_key] = 1
+            page = st.session_state[page_key]
+            if page > pages:
+                page = pages
+                st.session_state[page_key] = page
             
             start_idx = (page - 1) * PER_PAGE
             end_idx = start_idx + PER_PAGE
@@ -923,4 +930,62 @@ else:
             for i, story in enumerate(paged_stories):
                 with cols[i % 3]:
                     render_story_card(story)
+
+            if pages > 1:
+                st.markdown("<br><hr style='border-color: rgba(255,255,255,0.05); margin: 32px 0;'>", unsafe_allow_html=True)
+                
+                html_logo = "<div style='text-align: center; font-size: 42px; font-weight: 800; margin-bottom: 8px; font-family: sans-serif; letter-spacing: -2px;'>"
+                html_logo += "<span style='color: #4DA3FF'>B</span>"
+                html_logo += "<span style='color: #FF5C5C'>r</span>"
+                html_logo += "<span style='color: #F3C623'>i</span>"
+                for p in range(1, pages + 1):
+                    if p == page:
+                        html_logo += "<span style='color: #FF5C5C'>e</span>"
+                    else:
+                        html_logo += "<span style='color: #F3C623'>e</span>"
+                html_logo += "<span style='color: #4DA3FF'>f</span>"
+                html_logo += "<span style='color: #3DDC97'>B</span>"
+                html_logo += "<span style='color: #FF5C5C'>o</span>"
+                html_logo += "<span style='color: #F3C623'>t</span>"
+                html_logo += "</div>"
+                st.markdown(html_logo, unsafe_allow_html=True)
+                
+                st.markdown("""
+                <style>
+                div[data-testid="stHorizontalBlock"]:has(button[kind="tertiary"]) {
+                    justify-content: center !important;
+                    gap: 4px !important;
+                }
+                div[data-testid="stHorizontalBlock"]:has(button[kind="tertiary"]) > div[data-testid="column"] {
+                    width: auto !important;
+                    flex: 0 1 auto !important;
+                    min-width: 0 !important;
+                }
+                button[kind="tertiary"] {
+                    color: #4DA3FF !important;
+                    font-weight: 600 !important;
+                    font-size: 14px !important;
+                    padding: 4px 8px !important;
+                    background: transparent !important;
+                    border: none !important;
+                }
+                button[kind="tertiary"]:hover {
+                    color: #F5F7FA !important;
+                    background: transparent !important;
+                    text-decoration: underline !important;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                btn_cols = st.columns(pages + (1 if page < pages else 0))
+                for p in range(1, pages + 1):
+                    with btn_cols[p-1]:
+                        if st.button(str(p), key=f"pag_btn_{p}_{page_key}", type="tertiary", disabled=(p == page)):
+                            st.session_state[page_key] = p
+                            st.rerun()
+                if page < pages:
+                    with btn_cols[pages]:
+                        if st.button("Next", key=f"pag_btn_next_{page_key}", type="tertiary"):
+                            st.session_state[page_key] = page + 1
+                            st.rerun()
 
