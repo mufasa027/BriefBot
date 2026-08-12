@@ -935,18 +935,18 @@ else:
                 st.markdown("<br><hr style='border-color: rgba(255,255,255,0.05); margin: 32px 0;'>", unsafe_allow_html=True)
                 
                 html_logo = "<div style='text-align: center; font-size: 42px; font-weight: 800; margin-bottom: 8px; font-family: sans-serif; letter-spacing: -2px;'>"
-                html_logo += "<span style='color: #4DA3FF'>B</span>"
-                html_logo += "<span style='color: #FF5C5C'>r</span>"
-                html_logo += "<span style='color: #F3C623'>i</span>"
+                html_logo += "<span style='color: var(--text-muted)'>B</span>"
+                html_logo += "<span style='color: var(--text-muted)'>r</span>"
+                html_logo += "<span style='color: var(--text-muted)'>i</span>"
                 for p in range(1, pages + 1):
                     if p == page:
-                        html_logo += "<span style='color: #FF5C5C'>e</span>"
+                        html_logo += "<span style='color: var(--text-primary)'>e</span>"
                     else:
-                        html_logo += "<span style='color: #F3C623'>e</span>"
-                html_logo += "<span style='color: #4DA3FF'>f</span>"
-                html_logo += "<span style='color: #3DDC97'>B</span>"
-                html_logo += "<span style='color: #FF5C5C'>o</span>"
-                html_logo += "<span style='color: #F3C623'>t</span>"
+                        html_logo += "<span style='color: var(--text-muted)'>e</span>"
+                html_logo += "<span style='color: var(--text-muted)'>f</span>"
+                html_logo += "<span style='color: var(--text-muted)'>B</span>"
+                html_logo += "<span style='color: var(--text-muted)'>o</span>"
+                html_logo += "<span style='color: var(--text-muted)'>t</span>"
                 html_logo += "</div>"
                 st.markdown(html_logo, unsafe_allow_html=True)
                 
