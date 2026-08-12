@@ -838,11 +838,12 @@ else:
             </div>
             """, unsafe_allow_html=True)
             
-            col_dummy, col_btn = st.columns([5,2])
-            with col_btn:
-                if st.button("Review", key=f"btn_review_{story.story_id}", use_container_width=True):
-                    st.session_state.selected_story_id = story.story_id
-                    st.rerun()
+            if is_admin_authenticated():
+                col_dummy, col_btn = st.columns([5,2])
+                with col_btn:
+                    if st.button("Review", key=f"btn_review_{story.story_id}", use_container_width=True):
+                        st.session_state.selected_story_id = story.story_id
+                        st.rerun()
 
     def render_story_detail(story):
         """Renders the professional detail/workspace view for a single story."""
