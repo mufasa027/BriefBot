@@ -427,7 +427,7 @@ st.markdown("""
                 const container = e.target.closest('div[data-testid="stVerticalBlockBorderWrapper"]');
                 if (container) {
                     const btn = container.querySelector('button');
-                    if (btn && btn.innerText.includes('Review')) {
+                    if (btn && btn.innerText.toUpperCase().includes('REVIEW')) {
                         btn.click();
                     }
                 }
@@ -535,7 +535,11 @@ with st.sidebar:
     with st.form("filter_form"):
         search = st.text_input("Search", placeholder="Search stories...")
         
-        categories = ["All"] + sorted(list(set([s.category for s in stories if s.category]))) if stories else ["All"]
+        # Ensure "World" and "India" are always available, plus any others in the DB
+        db_categories = list(set([s.category for s in stories if s.category])) if stories else []
+        all_categories = sorted(list(set(db_categories + ["World", "India"])))
+        categories = ["All"] + all_categories
+        
         category = st.selectbox("Category", categories)
         
         sources_list = ["All"] + sorted(list(set([s.primary_source for s in stories if s.primary_source]))) if stories else ["All"]
