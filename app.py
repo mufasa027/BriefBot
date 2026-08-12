@@ -345,6 +345,25 @@ st.markdown("""
         margin-bottom: 24px;
         color: var(--text-primary);
     }
+    
+    @media (max-width: 768px) {
+        .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 2rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        [data-testid="metric-container"] div[data-testid="stMetricValue"] {
+            font-size: 24px !important;
+        }
+        .stButton > button {
+            padding: 0.6rem 1rem !important;
+            font-size: 14px !important;
+        }
+        div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
+            padding: 0.75rem !important;
+        }
+    }
 </style>
 """.replace("BACKGROUND_BASE64_PLACEHOLDER", bg_base64), unsafe_allow_html=True)
 
@@ -724,7 +743,31 @@ if st.session_state.selected_story_id:
 else:
     if st.session_state.active_page == "Overview":
         components.html("""
-<div id="ist-clock-container" style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom:32px; font-family: 'Inter', sans-serif;">
+<style>
+    #ist-clock-container {
+        display: flex; 
+        justify-content: space-between; 
+        align-items: flex-end; 
+        margin-bottom: 32px; 
+        font-family: 'Inter', sans-serif;
+    }
+    @media (max-width: 768px) {
+        #ist-clock-container {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+        #ist-clock-container > div:last-child {
+            text-align: left !important;
+            padding-left: 0 !important;
+            margin-top: 16px;
+        }
+        #ist-clock-time {
+            font-size: 28px !important;
+        }
+    }
+</style>
+<div id="ist-clock-container">
     <div>
         <h2 id="ist-clock-time" style="font-size:32px; font-weight:700; color:#F5F7FA; margin-bottom:4px; font-variant-numeric: tabular-nums; line-height: 1.2; margin-top: 0;">--:--:--</h2>
         <div id="ist-clock-date" style="color:#9299A5; text-transform:uppercase; font-size:12px; letter-spacing:1px;">--</div>
