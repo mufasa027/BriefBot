@@ -714,22 +714,11 @@ else:
                     st.cache_data.clear()
                     st.rerun()
         else:
-            st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>? PUBLIC VIEW</h3>", unsafe_allow_html=True)
-            with st.expander("Admin Login"):
-                with st.form("login_form"):
-                    admin_user = st.text_input("Username")
-                    admin_pass = st.text_input("Password", type="password")
-                    if st.form_submit_button("Sign In", use_container_width=True):
-                        if login(admin_user, admin_pass):
-                            st.success("Authenticated!")
-                            import time
-                            time.sleep(0.5)
-                            st.rerun()
-                        else:
-                            st.error("Invalid credentials")
+            st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>● PUBLIC VIEW (READ-ONLY)</h3>", unsafe_allow_html=True)
 
         st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
-    st.markdown("<div class='nav-header'>EDITORIAL FEED</div>", unsafe_allow_html=True)
+        
+        st.markdown("<div class='nav-header'>EDITORIAL FEED</div>", unsafe_allow_html=True)
         
         with st.form("filter_form"):
             search = st.text_input("Search", placeholder="Search stories...")
