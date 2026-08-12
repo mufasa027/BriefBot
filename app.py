@@ -384,11 +384,23 @@ st.markdown("""
     /* 2. Interactive Hover Lifts */
     div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
         transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+        cursor: pointer;
     }
     div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"]:hover {
         transform: translateY(-2px);
         box-shadow: 0 12px 40px rgba(0,0,0,0.3);
         border-color: rgba(77, 163, 255, 0.2) !important;
+    }
+    
+    /* Ensure links inside the clickable card keep their own styling and pointer */
+    .story-card-wrapper a {
+        color: var(--accent-blue);
+        text-decoration: none;
+        position: relative;
+        z-index: 10; /* Ensure it catches clicks over the card */
+    }
+    .story-card-wrapper a:hover {
+        text-decoration: underline;
     }
 
     /* 5. Skeleton Loading / Pulse Effects */
@@ -402,6 +414,28 @@ st.markdown("""
         border-color: var(--accent-blue) !important;
     }
 </style>
+<script>
+    const parentDoc = window.parent.document;
+    if (!parentDoc.getElementById('briefbot-card-clicker')) {
+        const script = parentDoc.createElement('script');
+        script.id = 'briefbot-card-clicker';
+        script.innerHTML = `
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('a')) return; // Ignore link clicks
+                if (e.target.closest('button')) return; // Ignore button clicks
+                
+                const container = e.target.closest('div[data-testid="stVerticalBlockBorderWrapper"]');
+                if (container) {
+                    const btn = container.querySelector('button');
+                    if (btn && btn.innerText.includes('Review')) {
+                        btn.click();
+                    }
+                }
+            });
+        `;
+        parentDoc.head.appendChild(script);
+    }
+</script>
 """.replace("BACKGROUND_BASE64_PLACEHOLDER", bg_base64), unsafe_allow_html=True)
 
 
@@ -586,6 +620,8 @@ def render_story_card(story):
                         <span style='color:var(--text-primary);'>{story.primary_source}</span>
                         <span style='color:var(--border-color);'>|</span>
                         <span>{story.first_published[:16] if story.first_published else ''}</span>
+                        <span style='color:var(--border-color);'>|</span>
+                        <a href='{primary_art.url if hasattr(primary_art, "url") else primary_art.get("url", "#")}' target='_blank' style='font-weight: 600;'>Read Source ↗</a>
                     </div>
                     <div class='story-headline'>{story.story_title}</div>
                 </div>
