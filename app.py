@@ -607,7 +607,7 @@ def render_story_card(story):
         </div>
         """, unsafe_allow_html=True)
         
-        col_dummy, col_btn = st.columns([4,1])
+        col_dummy, col_btn = st.columns([5,2])
         with col_btn:
             if st.button("Review", key=f"btn_review_{story.story_id}", use_container_width=True):
                 st.session_state.selected_story_id = story.story_id
