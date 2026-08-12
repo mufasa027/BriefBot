@@ -18,6 +18,9 @@ def transition_article_status(article, new_status):
     Transitions article/story status across workflow stages ('new', 'generated', 'approved', 'rejected', 'queued', 'publishing', 'published', 'failed').
     Saves JSON state under data/articles/<new_status>/ and updates database.
     """
+    from services.auth_service import require_admin
+    require_admin()
+    
     art_id = article.get("id")
     art_uuid = get_or_create_article_uuid(article)
     old_status = article.get("status", "new")
@@ -64,6 +67,9 @@ def handle_generate_story_action(story_obj):
     3. Transactional Validation: Verifies all 5 required assets exist.
     4. Atomic Commit: Marks status as 'post_ready' if valid, or rolls back to 'new' if any asset is missing.
     """
+    from services.auth_service import require_admin
+    require_admin()
+    
     start_time = time.time()
     from story_engine.editorial import synthesize_story_post_copy
     from services.renderer_service import render_post_for_article

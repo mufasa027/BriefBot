@@ -1,4 +1,5 @@
 import streamlit as st
+from services.auth_service import is_admin_authenticated, login, logout
 import streamlit.components.v1 as components
 import pandas as pd
 import math
@@ -504,33 +505,54 @@ with st.sidebar:
 
     st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
     
-    st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
-    if st.button("Fetch & Process Latest", use_container_width=True):
-        from settings import OPENROUTER_API_KEY
-        if not OPENROUTER_API_KEY:
-            st.error("Error: OPENROUTER_API_KEY is not set.")
-        else:
-            with st.status("Fetching and clustering news...", expanded=True) as status:
-                try:
-                    import main, sys
-                    from io import StringIO
-                    original_stdout = sys.stdout
-                    sys.stdout = StringIO()
-                    try:
-                        main.main()
-                    finally:
-                        output = sys.stdout.getvalue()
-                        sys.stdout = original_stdout
-                    status.update(label="News fetched successfully!", state="complete", expanded=False)
-                except Exception as e:
-                    status.update(label=f"Error: {e}", state="error", expanded=True)
-            time.sleep(2)
-            st.cache_data.clear()
+    is_admin = is_admin_authenticated()
+    if is_admin:
+        st.markdown("<h3 style='font-size:14px; color:var(--accent-success); text-transform:uppercase; margin-bottom:12px;'>? AUTHENTICATED</h3>", unsafe_allow_html=True)
+        if st.button("Log Out", use_container_width=True):
+            logout()
             st.rerun()
+            
+        st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
+        if st.button("Fetch & Process Latest", use_container_width=True):
+            from settings import OPENROUTER_API_KEY
+            if not OPENROUTER_API_KEY:
+                st.error("Error: OPENROUTER_API_KEY is not set.")
+            else:
+                with st.status("Fetching and clustering news...", expanded=True) as status:
+                    try:
+                        import main, sys
+                        from io import StringIO
+                        original_stdout = sys.stdout
+                        sys.stdout = StringIO()
+                        try:
+                            main.main()
+                        finally:
+                            output = sys.stdout.getvalue()
+                            sys.stdout = original_stdout
+                        status.update(label="News fetched successfully!", state="complete", expanded=False)
+                    except Exception as e:
+                        status.update(label=f"Error: {e}", state="error", expanded=True)
+                import time
+                time.sleep(2)
+                st.cache_data.clear()
+                st.rerun()
+    else:
+        st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>? PUBLIC VIEW</h3>", unsafe_allow_html=True)
+        with st.expander("Admin Login"):
+            with st.form("login_form"):
+                admin_user = st.text_input("Username")
+                admin_pass = st.text_input("Password", type="password")
+                if st.form_submit_button("Sign In", use_container_width=True):
+                    if login(admin_user, admin_pass):
+                        st.success("Authenticated!")
+                        import time
+                        time.sleep(0.5)
+                        st.rerun()
+                    else:
+                        st.error("Invalid credentials")
 
     st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
-    
-    st.markdown("<div class='nav-header'>EDITORIAL FEED</div>", unsafe_allow_html=True)
+st.markdown("<div class='nav-header'>EDITORIAL FEED</div>", unsafe_allow_html=True)
     
     with st.form("filter_form"):
         search = st.text_input("Search", placeholder="Search stories...")
@@ -551,9 +573,12 @@ with st.sidebar:
     
     st.markdown("<br><br>", unsafe_allow_html=True)
     with st.expander("System Diagnostics"):
-        if st.button("Run Health Check"):
-            diag = run_database_diagnostics()
-            st.json(diag)
+        if is_admin_authenticated():
+            if st.button("Run Health Check"):
+                diag = run_database_diagnostics()
+                st.json(diag)
+        else:
+            st.info("Admin access required for diagnostics.")
 
 # ==========================================
 # 6. FILTER LOGIC
@@ -762,37 +787,46 @@ def render_story_detail(story):
         col_a1, col_a2, col_a3, col_a4 = st.columns(4)
         with col_a1:
             btn_label = "Re-synthesize" if has_render else "Synthesize"
-            if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}_{has_render}", use_container_width=True):
-                st.toast("Synthesizing Post... 🔄", icon="⏳")
-                from services.queue_service import handle_generate_story_action, transition_article_status
-                updated_s, err = handle_generate_story_action(story)
-                if err:
-                    st.toast(f"Generation Error: {err}", icon="❌")
-                else:
-                    transition_article_status(s_dict, "post_ready")
-                    st.toast("Post Synthesized Successfully! ✅", icon="✨")
-                    time.sleep(1.5)
-                    st.cache_data.clear()
-                    st.rerun()
+            if not is_admin_authenticated():
+                st.button("🔒 " + btn_label, disabled=True, key=f"synth_btn_{story_id}_{has_render}", use_container_width=True, help="Admin access required to generate posts.")
+            else:
+                if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}_{has_render}", use_container_width=True):
+                    st.toast("Synthesizing Post... 🔄", icon="⏳")
+                    from services.queue_service import handle_generate_story_action, transition_article_status
+                    updated_s, err = handle_generate_story_action(story)
+                    if err:
+                        st.toast(f"Generation Error: {err}", icon="❌")
+                    else:
+                        transition_article_status(s_dict, "post_ready")
+                        st.toast("Post Synthesized Successfully! ✅", icon="✨")
+                        time.sleep(1.5)
+                        st.cache_data.clear()
+                        st.rerun()
                         
         with col_a2:
-            if st.button("Approve", type="primary", disabled=(current_status != "post_ready" or not has_render), use_container_width=True):
-                from services.queue_service import transition_article_status
-                transition_article_status(s_dict, "approved")
-                st.toast("Post Approved and Ready! 🚀", icon="✅")
-                time.sleep(1)
-                st.cache_data.clear()
-                st.rerun()
+            if not is_admin_authenticated():
+                st.button("🔒 Approve", disabled=True, use_container_width=True, help="Admin access required.")
+            else:
+                if st.button("Approve", type="primary", disabled=(current_status != "post_ready" or not has_render), use_container_width=True):
+                    from services.queue_service import transition_article_status
+                    transition_article_status(s_dict, "approved")
+                    st.toast("Post Approved and Ready! 🚀", icon="✅")
+                    time.sleep(1)
+                    st.cache_data.clear()
+                    st.rerun()
                 
         with col_a3:
-            if st.button("Reject", disabled=(current_status not in ["new", "post_ready"]), use_container_width=True):
-                from services.queue_service import transition_article_status
-                transition_article_status(s_dict, "rejected")
-                st.toast("Story Rejected.", icon="🗑️")
-                time.sleep(1)
-                st.cache_data.clear()
-                st.session_state.selected_story_id = None
-                st.rerun()
+            if not is_admin_authenticated():
+                st.button("🔒 Reject", disabled=True, use_container_width=True, help="Admin access required.")
+            else:
+                if st.button("Reject", disabled=(current_status not in ["new", "post_ready"]), use_container_width=True):
+                    from services.queue_service import transition_article_status
+                    transition_article_status(s_dict, "rejected")
+                    st.toast("Story Rejected.", icon="🗑️")
+                    time.sleep(1)
+                    st.cache_data.clear()
+                    st.session_state.selected_story_id = None
+                    st.rerun()
                 
         with col_a4:
             if has_render:
