@@ -15,8 +15,8 @@ os.makedirs(ASSETS_DIR, exist_ok=True)
 
 def create_branded_fallback_image(output_path=None):
     """
-    Generates a high-quality dark cinematic editorial fallback background image (1080x1575)
-    used when news photo downloads fail.
+    Generates a high-quality typographic editorial fallback background image (1080x1575)
+    used when news photo downloads fail. Matches the new SVG aesthetic.
     """
     if output_path is None:
         output_path = DEFAULT_BG_PATH
@@ -25,18 +25,47 @@ def create_branded_fallback_image(output_path=None):
         return output_path
 
     try:
-        # Create dark gradient background
+        import random
+        from PIL import ImageFont
         w, h = 1080, 1575
-        base = Image.new("RGB", (w, h), (18, 22, 28))
+        base = Image.new("RGB", (w, h), (7, 9, 13)) # #07090D
         draw = ImageDraw.Draw(base)
 
-        # Subtle dark editorial grid pattern
-        for y in range(0, h, 60):
-            draw.line([(0, y), (w, y)], fill=(28, 34, 44), width=1)
-        for x in range(0, w, 60):
-            draw.line([(x, 0), (x, h)], fill=(28, 34, 44), width=1)
+        quotes = [
+            "Peace begins with a smile.",
+            "There is no path to peace. Peace is the path.",
+            "Darkness cannot drive out darkness; only light can do that.",
+            "We must learn to live together as brothers.",
+            "PEACE", "UNITY", "HOPE", "TRUTH", "WORLD INTELLIGENCE"
+        ]
 
-        base = base.filter(ImageFilter.GaussianBlur(radius=2))
+        try:
+            font_path = "assets/fonts/Roboto-Bold.ttf"
+        except:
+            font_path = None
+
+        random.seed(42)
+        for _ in range(30):
+            q = random.choice(quotes)
+            x = random.randint(-100, w + 100)
+            y = random.randint(-100, h + 100)
+            size = random.randint(20, 60)
+            opacity = random.randint(5, 15)
+            
+            try:
+                fnt = ImageFont.truetype(font_path, size)
+            except:
+                fnt = ImageFont.load_default()
+
+            txt_img = Image.new('RGBA', (w, h), (0,0,0,0))
+            d = ImageDraw.Draw(txt_img)
+            d.text((x, y), q, font=fnt, fill=(255, 255, 255, opacity))
+            
+            if random.random() > 0.5:
+                txt_img = txt_img.rotate(90, center=(x, y))
+            
+            base.paste(txt_img, (0,0), txt_img)
+
         base.save(output_path, quality=92)
         return output_path
     except Exception as e:
