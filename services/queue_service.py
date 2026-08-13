@@ -228,15 +228,33 @@ def handle_generate_story_action(story_obj, force=False):
 def handle_reset_story_render(story_obj):
     import os
     s_dict = story_obj.to_dict() if hasattr(story_obj, 'to_dict') else story_obj
-    story_id = s_dict.get("story_id")
+    story_id = s_dict.get("story_id") or s_dict.get("uuid")
+    
     existing_render = s_dict.get("rendered_image_path")
     if existing_render and os.path.exists(existing_render):
         try:
             os.remove(existing_render)
         except Exception:
             pass
+    fallback_path = f"data/renders/post_{story_id}.png"
+    if os.path.exists(fallback_path):
+        try:
+            os.remove(fallback_path)
+        except Exception:
+            pass
+
     s_dict["rendered_image_path"] = None
     if hasattr(story_obj, "rendered_image_path"):
         story_obj.rendered_image_path = None
+    
+    # Must update status to 'new' on the Python object so it saves to DB
+    s_dict["status"] = "new"
+    if hasattr(story_obj, "status"):
+        story_obj.status = "new"
+
     transition_article_status(s_dict, "new")
+    
+    # Save back to database to clear rendered_image_path
+    from database.crud import insert_or_update_story
+    insert_or_update_story(story_obj if hasattr(story_obj, 'status') else s_dict)
 
