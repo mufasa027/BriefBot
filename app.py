@@ -669,10 +669,13 @@ else:
         # Custom Navigation
         page_options = {
             "Overview": "",
-            "All Stories": "",
-            "Post Ready": "",
-            "Approved": ""
+            "All Stories": ""
         }
+        
+        is_admin = is_admin_authenticated()
+        if is_admin:
+            page_options["Post Ready"] = ""
+            page_options["Approved"] = ""
         
         for page, icon in page_options.items():
             if st.button(f"{page}", key=f"nav_{page}", use_container_width=True, type="primary" if st.session_state.active_page == page else "secondary"):
