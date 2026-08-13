@@ -688,8 +688,13 @@ else:
             if st.button("Log Out", use_container_width=True):
                 logout()
                 st.rerun()
+        else:
+            st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>● PUBLIC VIEW (READ-ONLY)</h3>", unsafe_allow_html=True)
                 
-            st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
+        st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
+        if not is_admin:
+            st.button("🔒 Fetch & Process Latest", disabled=True, use_container_width=True, help="Admin access required to fetch new news.")
+        else:
             if st.button("Fetch & Process Latest", use_container_width=True):
                 from settings import OPENROUTER_API_KEY
                 if not OPENROUTER_API_KEY:
@@ -713,8 +718,6 @@ else:
                     time.sleep(2)
                     st.cache_data.clear()
                     st.rerun()
-        else:
-            st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>● PUBLIC VIEW (READ-ONLY)</h3>", unsafe_allow_html=True)
 
         st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
         
