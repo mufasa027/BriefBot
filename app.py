@@ -692,32 +692,29 @@ else:
             st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>● PUBLIC VIEW (READ-ONLY)</h3>", unsafe_allow_html=True)
                 
         st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
-        if not is_admin:
-            st.button("🔒 Fetch & Process Latest", disabled=True, use_container_width=True, help="Admin access required to fetch new news.")
-        else:
-            if st.button("Fetch & Process Latest", use_container_width=True):
-                from settings import OPENROUTER_API_KEY
-                if not OPENROUTER_API_KEY:
-                    st.error("Error: OPENROUTER_API_KEY is not set.")
-                else:
-                    with st.status("Fetching and clustering news...", expanded=True) as status:
+        if st.button("Fetch & Process Latest", use_container_width=True):
+            from settings import OPENROUTER_API_KEY
+            if not OPENROUTER_API_KEY:
+                st.error("Error: OPENROUTER_API_KEY is not set.")
+            else:
+                with st.status("Fetching and clustering news...", expanded=True) as status:
+                    try:
+                        import main, sys
+                        from io import StringIO
+                        original_stdout = sys.stdout
+                        sys.stdout = StringIO()
                         try:
-                            import main, sys
-                            from io import StringIO
-                            original_stdout = sys.stdout
-                            sys.stdout = StringIO()
-                            try:
-                                main.main()
-                            finally:
-                                output = sys.stdout.getvalue()
-                                sys.stdout = original_stdout
-                            status.update(label="News fetched successfully!", state="complete", expanded=False)
-                        except Exception as e:
-                            status.update(label=f"Error: {e}", state="error", expanded=True)
-                    import time
-                    time.sleep(2)
-                    st.cache_data.clear()
-                    st.rerun()
+                            main.main()
+                        finally:
+                            output = sys.stdout.getvalue()
+                            sys.stdout = original_stdout
+                        status.update(label="News fetched successfully!", state="complete", expanded=False)
+                    except Exception as e:
+                        status.update(label=f"Error: {e}", state="error", expanded=True)
+                import time
+                time.sleep(2)
+                st.cache_data.clear()
+                st.rerun()
 
         st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
         
