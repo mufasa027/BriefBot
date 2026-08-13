@@ -156,8 +156,8 @@ def fetch_image(article, return_diagnostics=False):
     fallback_path = create_branded_fallback_image()
     
     # HARDCODED OVERRIDE for NDTV Monkey Skull issue as requested
-    _title = article.get("title", "").lower()
-    _url = article.get("url", "").lower()
+    _title = str(article.get("title") or "").lower()
+    _url = str(article.get("url") or "").lower()
     if ("monkey" in _title and "skull" in _title) or ("monkey-skull" in _url):
         override_path = r"C:\Users\abhin\.gemini\antigravity\brain\47e73929-70da-4e73-b74c-1cfec0ce30bd\.user_uploaded\media_1786552153000.png"
         if os.path.exists(override_path):

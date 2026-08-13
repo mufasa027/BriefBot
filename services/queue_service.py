@@ -59,10 +59,10 @@ def transition_article_status(article, new_status):
     return new_status
 
 
-def handle_generate_story_action(story_obj):
+def handle_generate_story_action(story_obj, force=False):
     """
     Transactional & Atomic Story Post Generation:
-    1. Pre-render Duplicate Check: Skips generation if story is already rendered.
+    1. Pre-render Duplicate Check: Skips generation if story is already rendered (unless force=True).
     2. Synthesizes copy, fetches photo, renders post PNG, saves caption/hashtag/metadata files.
     3. Transactional Validation: Verifies all 5 required assets exist.
     4. Atomic Commit: Marks status as 'post_ready' if valid, or rolls back to 'new' if any asset is missing.
@@ -81,11 +81,12 @@ def handle_generate_story_action(story_obj):
     existing_render = s_dict.get("rendered_image_path") or get_render_path_for_uuid(story_id)
 
     # 1. PRE-RENDER DUPLICATE CHECK (Bug #5)
-    if s_dict.get("status") in ["post_ready", "approved", "queued", "published"]:
+    if not force and s_dict.get("status") in ["post_ready", "approved", "queued", "published"]:
         is_valid, _ = validate_story_assets(story_id, existing_render, status=s_dict.get("status"))
         if is_valid:
             log_event("DUPLICATE_RENDER_SKIPPED", f"Skipped duplicate rendering for Story #{story_id}. Existing assets valid.", article_uuid=story_id)
             return s_dict, None
+
 
     log_event("STORY_GEN_DIAGNOSTIC", f"=== STARTED GENERATION ATTEMPT FOR STORY #{story_id} ===", article_uuid=story_id)
 
@@ -221,3 +222,21 @@ def handle_generate_story_action(story_obj):
             level="ERROR"
         )
         return s_dict, error_msg
+
+
+
+def handle_reset_story_render(story_obj):
+    import os
+    s_dict = story_obj.to_dict() if hasattr(story_obj, 'to_dict') else story_obj
+    story_id = s_dict.get("story_id")
+    existing_render = s_dict.get("rendered_image_path")
+    if existing_render and os.path.exists(existing_render):
+        try:
+            os.remove(existing_render)
+        except Exception:
+            pass
+    s_dict["rendered_image_path"] = None
+    if hasattr(story_obj, "rendered_image_path"):
+        story_obj.rendered_image_path = None
+    transition_article_status(s_dict, "new")
+

@@ -1006,22 +1006,34 @@ else:
             
             col_a1, col_a2, col_a3, col_a4 = st.columns(4)
             with col_a1:
-                btn_label = "Re-synthesize" if has_render else "Synthesize"
-                if not is_admin_authenticated():
-                    st.button("🔒 " + btn_label, disabled=True, key=f"synth_btn_{story_id}_{has_render}", use_container_width=True, help="Admin access required to generate posts.")
-                else:
-                    if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}_{has_render}", use_container_width=True):
-                        st.toast("Synthesizing Post... 🔄", icon="⏳")
-                        from services.queue_service import handle_generate_story_action, transition_article_status
-                        updated_s, err = handle_generate_story_action(story)
-                        if err:
-                            st.toast(f"Generation Error: {err}", icon="❌")
-                        else:
-                            transition_article_status(s_dict, "post_ready")
-                            st.toast("Post Synthesized Successfully! ✅", icon="✨")
-                            time.sleep(1.5)
+                if has_render:
+                    if not is_admin_authenticated():
+                        st.button("🔒 Reset Render", disabled=True, key=f"reset_btn_{story_id}", use_container_width=True)
+                    else:
+                        if st.button("Reset Render", type="primary", key=f"reset_btn_{story_id}", use_container_width=True):
+                            from services.queue_service import handle_reset_story_render
+                            handle_reset_story_render(story)
+                            st.toast("Render reset successfully!", icon="✅")
+                            time.sleep(1)
                             st.cache_data.clear()
                             st.rerun()
+                else:
+                    btn_label = "Synthesize"
+                    if not is_admin_authenticated():
+                        st.button("🔒 " + btn_label, disabled=True, key=f"synth_btn_{story_id}", use_container_width=True, help="Admin access required to generate posts.")
+                    else:
+                        if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}", use_container_width=True):
+                            st.toast("Synthesizing Post... 🔄", icon="⏳")
+                            from services.queue_service import handle_generate_story_action, transition_article_status
+                            updated_s, err = handle_generate_story_action(story, force=True)
+                            if err:
+                                st.toast(f"Generation Error: {err}", icon="❌")
+                            else:
+                                transition_article_status(s_dict, "post_ready")
+                                st.toast("Post Synthesized Successfully! ✅", icon="✨")
+                                time.sleep(1.5)
+                                st.cache_data.clear()
+                                st.rerun()
                             
             with col_a2:
                 if not is_admin_authenticated():

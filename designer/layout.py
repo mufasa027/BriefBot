@@ -69,7 +69,7 @@ class LayoutEngine:
                     break
 
         # 2. Dynamic Headline Font Scaling & Line Balancing
-        title_text = article.get("title", "").strip()
+        title_text = str(article.get("title") or "").strip()
         headline_font_size, headline_lines = calculate_headline_font_size(
             title_text,
             FONTS["bold"],
@@ -105,7 +105,7 @@ class LayoutEngine:
         max_summary_lines = max(1, available_summary_h // line_h)
 
         # Fit summary text words within available_summary_h
-        raw_summary = article.get("summary", "").strip()
+        raw_summary = str(article.get("summary") or "").strip()
         import re
         raw_summary = re.sub(r'<[^>]+>', '', raw_summary)
         words = raw_summary.split()
