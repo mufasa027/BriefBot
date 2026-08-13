@@ -682,17 +682,47 @@ else:
 
         st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
         
+        admin_view = "Editorial Feed"
         is_admin = is_admin_authenticated()
         if is_admin:
             st.markdown("<h3 style='font-size:14px; color:var(--accent-success); text-transform:uppercase; margin-bottom:12px;'>? AUTHENTICATED</h3>", unsafe_allow_html=True)
             if st.button("Log Out", use_container_width=True):
                 logout()
                 st.rerun()
+                
+            st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Navigation</h3>", unsafe_allow_html=True)
+            admin_view = st.radio("View", ["Editorial Feed", "User Feedback"], label_visibility="collapsed")
         else:
             st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>● PUBLIC VIEW (READ-ONLY)</h3>", unsafe_allow_html=True)
             if st.button("Admin Login", use_container_width=True):
                 st.session_state.role_selected = "admin_login"
                 st.rerun()
+                
+            st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Submit Feedback</h3>", unsafe_allow_html=True)
+            with st.expander("Report Bug or Feedback"):
+                with st.form("feedback_form"):
+                    fb_name = st.text_input("Your Name")
+                    fb_text = st.text_area("Feedback")
+                    if st.form_submit_button("Submit", use_container_width=True):
+                        if fb_name and fb_text:
+                            from database.models import FeedbackModel
+                            from database.connection import get_session
+                            from datetime import datetime
+                            with get_session() as session:
+                                new_fb = FeedbackModel(
+                                    name=fb_name,
+                                    feedback_text=fb_text,
+                                    timestamp=datetime.utcnow().isoformat()
+                                )
+                                session.add(new_fb)
+                                session.commit()
+                            
+                            @st.dialog("Feedback Received")
+                            def success_dialog():
+                                st.write("Your feedback has been successfully submitted. Thank you for helping us improve BriefBot.")
+                            success_dialog()
+                        else:
+                            st.error("Please fill in both name and feedback.")
                 
         st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
         if st.button("Fetch & Process Latest", use_container_width=True):
@@ -721,6 +751,23 @@ else:
 
         st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
         
+        if admin_view == "User Feedback":
+            st.markdown("<div class='nav-header'>USER FEEDBACK</div>", unsafe_allow_html=True)
+            from database.models import FeedbackModel
+            from database.connection import get_session
+            
+            with get_session() as session:
+                feedbacks = session.query(FeedbackModel).order_by(FeedbackModel.id.desc()).all()
+                if not feedbacks:
+                    st.info("No feedback submitted yet.")
+                else:
+                    for fb in feedbacks:
+                        with st.container():
+                            st.markdown(f"**{fb.name}** - <span style='color:var(--text-muted); font-size: 12px;'>{fb.timestamp[:19].replace('T', ' ')}</span>", unsafe_allow_html=True)
+                            st.write(fb.feedback_text)
+                            st.markdown("<hr style='border-color: #242933;'>", unsafe_allow_html=True)
+            st.stop()
+
         st.markdown("<div class='nav-header'>EDITORIAL FEED</div>", unsafe_allow_html=True)
         
         with st.form("filter_form"):

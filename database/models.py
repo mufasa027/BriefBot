@@ -70,3 +70,11 @@ class StoryModel(Base):
     rejected_time = Column(String)
     posted = Column(Integer, default=0)
     posted_time = Column(String)
+
+class FeedbackModel(Base):
+    __tablename__ = 'feedback'
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+    feedback_text = Column(Text, nullable=False)
+    timestamp = Column(String)
