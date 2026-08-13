@@ -690,6 +690,9 @@ else:
                 st.rerun()
         else:
             st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>● PUBLIC VIEW (READ-ONLY)</h3>", unsafe_allow_html=True)
+            if st.button("Admin Login", use_container_width=True):
+                st.session_state.role_selected = "admin_login"
+                st.rerun()
                 
         st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Actions</h3>", unsafe_allow_html=True)
         if st.button("Fetch & Process Latest", use_container_width=True):
