@@ -90,12 +90,24 @@ def handle_generate_story_action(story_obj, force=False):
 
     log_event("STORY_GEN_DIAGNOSTIC", f"=== STARTED GENERATION ATTEMPT FOR STORY #{story_id} ===", article_uuid=story_id)
 
-    # 2. Synthesize multi-source copy & exact 10 hashtags
-    synth = synthesize_story_post_copy(story_obj)
+    articles = s_dict.get("articles", [])
+    
+    is_edited = False
+    if articles and articles[0].get("is_edited"):
+        is_edited = True
+        synth = {
+            "improved_headline": articles[0].get("title", ""),
+            "summary": articles[0].get("summary", ""),
+            "caption": articles[0].get("caption", ""),
+            "hashtags": articles[0].get("hashtags", ""),
+        }
+    else:
+        # 2. Synthesize multi-source copy & exact 10 hashtags
+        synth = synthesize_story_post_copy(story_obj)
+        
     caption_res = "OK" if synth.get("caption") else "FAILED"
     hashtag_res = "OK" if synth.get("hashtags") else "FAILED"
 
-    articles = s_dict.get("articles", [])
     primary_art = articles[0] if articles else {
         "title": synth["improved_headline"],
         "summary": synth["summary"],

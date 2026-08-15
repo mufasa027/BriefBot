@@ -569,7 +569,7 @@ if st.session_state.role_selected is None:
         st.markdown(f"""
         <div class="role-card-btn" id="admin-card">
             <div class="role-title">ADMIN</div>
-            <div class="role-desc">Review stories, synthesize posts and manage the editorial workflow. Authorized access required.</div>
+            <div class="role-desc">Review stories, render posts and manage the editorial workflow. Authorized access required.</div>
             <div class="role-badge role-badge-admin">EDITORIAL / CREATE</div>
         </div>
         """, unsafe_allow_html=True)
@@ -988,6 +988,22 @@ else:
 
             st.markdown("<br>", unsafe_allow_html=True)
             
+            if has_render and primary_art:
+                st.markdown("<div class='section-header'>EDIT RENDER CONTENT</div>", unsafe_allow_html=True)
+                with st.form(key=f"edit_copy_form_{story_id}"):
+                    new_headline = st.text_input("Headline", value=primary_art.get("title", ""))
+                    new_summary = st.text_area("Subtext (Summary)", value=primary_art.get("summary", ""), height=100)
+                    if st.form_submit_button("Save Edits (Requires Reset Render)", type="secondary"):
+                        primary_art["title"] = new_headline
+                        primary_art["summary"] = new_summary
+                        primary_art["is_edited"] = True
+                        from database.crud import insert_or_update_story
+                        insert_or_update_story(story)
+                        st.toast("Edits saved! Use Reset Render -> Render to apply.", icon="✅")
+                        time.sleep(1)
+                        st.rerun()
+                st.markdown("<br>", unsafe_allow_html=True)
+            
             st.markdown("<div class='section-header'>CAPTION</div>", unsafe_allow_html=True)
             if caption_text:
                 st.code(caption_text, language=None)
@@ -1018,19 +1034,19 @@ else:
                             st.cache_data.clear()
                             st.rerun()
                 else:
-                    btn_label = "Synthesize"
+                    btn_label = "Render"
                     if not is_admin_authenticated():
                         st.button("🔒 " + btn_label, disabled=True, key=f"synth_btn_{story_id}", use_container_width=True, help="Admin access required to generate posts.")
                     else:
                         if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}", use_container_width=True):
-                            st.toast("Synthesizing Post... 🔄", icon="⏳")
+                            st.toast("Rendering Post... 🔄", icon="⏳")
                             from services.queue_service import handle_generate_story_action, transition_article_status
                             updated_s, err = handle_generate_story_action(story, force=True)
                             if err:
                                 st.toast(f"Generation Error: {err}", icon="❌")
                             else:
                                 transition_article_status(s_dict, "post_ready")
-                                st.toast("Post Synthesized Successfully! ✅", icon="✨")
+                                st.toast("Post Rendered Successfully! ✅", icon="✨")
                                 time.sleep(1.5)
                                 st.cache_data.clear()
                                 st.rerun()
