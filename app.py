@@ -1001,6 +1001,7 @@ else:
                         insert_or_update_story(story)
                         st.toast("Edits saved! Use Reset Render -> Render to apply.", icon="✅")
                         time.sleep(1)
+                        st.cache_data.clear()
                         st.rerun()
                 st.markdown("<br>", unsafe_allow_html=True)
             
