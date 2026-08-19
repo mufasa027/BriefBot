@@ -694,7 +694,7 @@ else:
                 st.rerun()
                 
             st.markdown("<br><h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>Navigation</h3>", unsafe_allow_html=True)
-            admin_view = st.radio("View", ["Editorial Feed", "User Feedback"], label_visibility="collapsed")
+            admin_view = st.radio("View", ["Editorial Feed", "Analytics", "User Feedback"], label_visibility="collapsed")
         else:
             st.markdown("<h3 style='font-size:14px; color:#9299A5; text-transform:uppercase; margin-bottom:12px;'>● PUBLIC VIEW (READ-ONLY)</h3>", unsafe_allow_html=True)
             if st.button("Admin Login", use_container_width=True):
@@ -754,6 +754,46 @@ else:
 
         st.markdown("<br><hr style='border-color: #242933;'><br>", unsafe_allow_html=True)
         
+        if admin_view == "Analytics":
+            st.markdown("<div class='nav-header'>EDITORIAL ANALYTICS</div>", unsafe_allow_html=True)
+            st.markdown("Daily statistics and overall performance metrics based on DB.")
+            
+            from database.connection import get_connection
+            from datetime import datetime, timedelta
+            
+            conn = get_connection()
+            cursor = conn.cursor()
+            
+            today_str = datetime.utcnow().strftime("%Y-%m-%d")
+            
+            cursor.execute("SELECT COUNT(*) FROM stories WHERE created_at LIKE ?", (f"{today_str}%",))
+            total_stories_today = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM stories WHERE status IN ('post_ready', 'approved', 'queued', 'published') AND created_at LIKE ?", (f"{today_str}%",))
+            total_renders_today = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM stories")
+            total_stories_ever = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT story_title, editorial_score, num_sources FROM stories WHERE created_at LIKE ? ORDER BY editorial_score DESC LIMIT 5", (f"{today_str}%",))
+            top_stories = cursor.fetchall()
+            
+            conn.close()
+            
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Stories Evaluated (Today)", total_stories_today)
+            col2.metric("Posts Rendered (Today)", total_renders_today)
+            col3.metric("Total Stories (All Time)", total_stories_ever)
+            
+            st.markdown("### Top 5 Highest Scoring Stories Today")
+            if top_stories:
+                for idx, row in enumerate(top_stories):
+                    title, score, src_count = row
+                    st.info(f"**#{idx+1} ({score}/100)** - {title} _({src_count} sources)_")
+            else:
+                st.write("No stories found for today yet.")
+            st.stop()
+
         if admin_view == "User Feedback":
             st.markdown("<div class='nav-header'>USER FEEDBACK</div>", unsafe_allow_html=True)
             from database.models import FeedbackModel
