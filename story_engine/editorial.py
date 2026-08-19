@@ -171,7 +171,7 @@ Return ONLY valid JSON:
 """
 
 
-def synthesize_story_post_copy(story: any, max_retries: int = 3) -> dict:
+def synthesize_story_post_copy(story: any, max_retries: int = 3, headline_style: str = "NEUTRAL", caption_style: str = "NEWSROOM") -> dict:
     """
     Synthesizes multi-source story copy with AI retries (3 retries).
     Guarantees non-empty caption and EXACTLY 10 hashtags.
@@ -198,6 +198,51 @@ def synthesize_story_post_copy(story: any, max_retries: int = 3) -> dict:
     caption = fallback_caption
     hashtags_raw = fallback_hashtags_raw
 
+    hl_instructions = {
+        'BREAKING': 'Start with URGENT: and state the core fact.',
+        'NEUTRAL': 'Straightforward facts without sensationalism.',
+        'EDITORIAL': 'Contextualized headline offering deeper insight.',
+        'ANALYTICAL': 'Focuses on numbers, impact, or geopolitical shifts.',
+        'MINIMAL': 'Bare minimum words to convey the event.'
+    }
+    
+    cap_instructions = {
+        'NEWSROOM': 'Standard journalistic reporting, 2-4 short paragraphs.',
+        'SOCIAL-FIRST': 'Engaging, punchy, designed for comments and saves.',
+        'ANALYTICAL': 'Detailed breakdown of the WHY and HOW behind the story.',
+        'EXPLAINER': "Format as 'What you need to know', using bullet points.",
+        'MINIMAL': 'Just the core facts.'
+    }
+    
+    hl_instruction = hl_instructions.get(headline_style.upper(), hl_instructions['NEUTRAL'])
+    cap_instruction = cap_instructions.get(caption_style.upper(), cap_instructions['NEWSROOM'])
+
+    dynamic_prompt = f"""You are the Executive Editor of CipherBrief.
+Synthesize coverage of a news event into an authoritative Instagram post payload.
+
+Requirements:
+- improved_headline: {hl_instruction}
+- summary: Synthesized 2-3 sentence summary (max 110 words).
+- caption: Comprehensive Instagram post caption summarizing key facts. 
+  CAPTION RULES ({caption_style}): {cap_instruction}
+  - professional CTA
+  - use exactly @cipherbrief when referring to the account
+  - never invent another account handle
+  - do not make the caption simply repeat the headline
+- hashtags: Generate 10-12 HIGHLY-SPECIFIC hashtags. 
+  HASHTAG RULES:
+  - You MUST include at least 6 ultra-specific tags based on the core entities of the story.
+  - DO NOT generate generic tags like #WorldNews or #BreakingNews for these 6.
+  - Then add 4 general/growth hashtags.
+
+Return ONLY valid JSON:
+{{
+    "improved_headline": "...",
+    "summary": "...",
+    "caption": "...",
+    "hashtags": "#SpecificPerson #SpecificCity #SpecificEvent #Entity #Company #Context #CipherBrief #WorldNews #GlobalNews #Breaking"
+}}"""
+
     client = get_ai_client()
     if client:
         for attempt in range(1, max_retries + 1):
@@ -207,7 +252,7 @@ def synthesize_story_post_copy(story: any, max_retries: int = 3) -> dict:
                     temperature=0.25,
                     max_tokens=500,
                     messages=[
-                        {"role": "system", "content": STORY_SYNTHESIS_PROMPT},
+                        {"role": "system", "content": dynamic_prompt},
                         {"role": "user", "content": f"Multi-Source Coverage:\n\n{combined_input}"}
                     ],
                 )

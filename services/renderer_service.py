@@ -30,7 +30,8 @@ def render_post_for_article(article):
             article=article,
             image_path=image_path,
             template_path="assets/template.png",
-            output_path=out_path
+            output_path=out_path,
+            template_style=article.get("template_style", "STANDARD")
         )
 
         if rendered_path and os.path.exists(rendered_path):

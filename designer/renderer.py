@@ -119,7 +119,7 @@ def generate_cinematic_fade(width, height, fade_start_y, fade_end_y, alpha_boost
     return Image.fromarray(rgba, mode="RGBA")
 
 
-def draw_headline(canvas, draw, article, layout_plan):
+def draw_headline(canvas, draw, article, layout_plan, template_style="STANDARD"):
     """
     Step 4: Renders yellow rounded headline boxes with dynamically solved font size and balanced lines.
     """
@@ -152,17 +152,21 @@ def draw_headline(canvas, draw, article, layout_plan):
             box_bottom + padding_y,
         )
 
+
+        bg_fill = (220, 38, 38) if template_style == "BREAKING" else COLORS["yellow"]
+        text_fill = COLORS["white"] if template_style == "BREAKING" else COLORS["black"]
+
         draw.rounded_rectangle(
             box_rect,
             radius=box_radius,
-            fill=COLORS["yellow"],
+            fill=bg_fill,
         )
 
         draw.text(
             (start_x, current_y),
             line,
             font=headline_font,
-            fill=COLORS["black"],
+            fill=text_fill,
         )
 
         current_y += (uniform_height + padding_y * 2 + line_gap)
@@ -280,17 +284,18 @@ def export(canvas, output_path):
     return output_path
 
 
-def render(article, image_path, template_path=None, output_path="output/final_post.png"):
+def render(article, image_path, template_path=None, output_path="output/final_post.png", template_style="STANDARD"):
     """
     Main entry point: Executes the 8-step modular rendering pipeline.
     """
     canvas = prepare_canvas(template_path)
-    canvas = prepare_image(canvas, image_path)
+    if template_style != "MINIMAL":
+        canvas = prepare_image(canvas, image_path)
     plan = layout_engine(canvas, article, image_path)
     
     draw = ImageDraw.Draw(canvas)
     
-    draw_headline(canvas, draw, article, plan)
+    draw_headline(canvas, draw, article, plan, template_style)
     draw_summary(canvas, article, plan)
     draw_metadata(canvas, draw, article, plan)
     draw_footer(canvas, draw, article, plan)

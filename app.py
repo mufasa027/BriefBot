@@ -1019,6 +1019,18 @@ else:
                 
             st.markdown("<hr style='border-color: #242933; margin: 32px 0;'>", unsafe_allow_html=True)
             
+            st.markdown("<div class='section-header'>TEMPLATE & STYLES</div>", unsafe_allow_html=True)
+            
+            col_s1, col_s2, col_s3 = st.columns(3)
+            with col_s1:
+                selected_ts = st.selectbox("Visual Template", ["STANDARD", "BREAKING", "MINIMAL"], key=f"ts_{story_id}")
+            with col_s2:
+                selected_hs = st.selectbox("Headline Style", ["NEUTRAL", "BREAKING", "EDITORIAL", "ANALYTICAL", "MINIMAL"], key=f"hs_{story_id}")
+            with col_s3:
+                selected_cs = st.selectbox("Caption Style", ["NEWSROOM", "SOCIAL-FIRST", "ANALYTICAL", "EXPLAINER", "MINIMAL"], key=f"cs_{story_id}")
+                
+            st.markdown("<hr style='border-color: #242933; margin: 32px 0;'>", unsafe_allow_html=True)
+            
             st.markdown("<div class='section-header'>WORKFLOW ACTIONS</div>", unsafe_allow_html=True)
             
             col_a1, col_a2, col_a3, col_a4 = st.columns(4)
@@ -1042,7 +1054,7 @@ else:
                         if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}", use_container_width=True):
                             st.toast("Rendering Post... 🔄", icon="⏳")
                             from services.queue_service import handle_generate_story_action, transition_article_status
-                            updated_s, err = handle_generate_story_action(story, force=True)
+                            updated_s, err = handle_generate_story_action(story, force=True, headline_style=selected_hs, caption_style=selected_cs, template_style=selected_ts)
                             if err:
                                 st.toast(f"Generation Error: {err}", icon="❌")
                             else:

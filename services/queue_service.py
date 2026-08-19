@@ -59,7 +59,7 @@ def transition_article_status(article, new_status):
     return new_status
 
 
-def handle_generate_story_action(story_obj, force=False):
+def handle_generate_story_action(story_obj, force=False, headline_style="NEUTRAL", caption_style="NEWSROOM", template_style="STANDARD"):
     """
     Transactional & Atomic Story Post Generation:
     1. Pre-render Duplicate Check: Skips generation if story is already rendered (unless force=True).
@@ -103,7 +103,7 @@ def handle_generate_story_action(story_obj, force=False):
         }
     else:
         # 2. Synthesize multi-source copy & exact 10 hashtags
-        synth = synthesize_story_post_copy(story_obj)
+        synth = synthesize_story_post_copy(story_obj, headline_style=headline_style, caption_style=caption_style)
         
     caption_res = "OK" if synth.get("caption") else "FAILED"
     hashtag_res = "OK" if synth.get("hashtags") else "FAILED"
