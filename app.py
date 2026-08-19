@@ -915,7 +915,7 @@ else:
                     </div>
                     <div style='text-align:right; margin-left:16px;'>
                         <div class='score-container'>
-                            <span class='score-value'>{story.overall_story_score}</span>
+                            <span class='score-value'>{getattr(story, 'editorial_score', story.overall_story_score) or story.overall_story_score}</span>
                             <span class='score-max'>/100</span>
                         </div>
                         <div class='score-label'>SCORE</div>
@@ -925,6 +925,7 @@ else:
                 <div style='display:flex; justify-content:space-between; align-items:center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;'>
                     <div style='display:flex; align-items:center; gap: 12px;'>
                         <span class='badge {badge_class}'>{current_status.upper().replace('_', ' ')}</span>
+                        {f"<span class='badge badge-rejected' style='background: #DC2626; color: white;'>{story.breaking_status}</span>" if getattr(story, 'breaking_status', 'NORMAL') in ["BREAKING", "DEVELOPING"] else ""}
                         <span style='font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; font-weight:600;'>{story.category}</span>
                     </div>
                 </div>
@@ -1015,7 +1016,7 @@ else:
                     </div>
                     <div>
                         <div style='color:var(--text-muted); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.15em; margin-bottom:4px;'>SCORE</div>
-                        <div class='score-container'><span class='score-value' style='font-size:20px;'>{story.overall_story_score}</span><span class='score-max'>/100</span></div>
+                        <div class='score-container'><span class='score-value' style='font-size:20px;'>{getattr(story, 'editorial_score', story.overall_story_score) or story.overall_story_score}</span><span class='score-max'>/100</span></div>
                     </div>
                 </div>
                 """, unsafe_allow_html=True)
@@ -1023,8 +1024,31 @@ else:
                 st.markdown("**AI Analysis & Reasoning**")
                 primary_art = story.articles[0] if story.articles else {}
                 explanation_points = generate_score_explanation(primary_art, story.num_sources)
-                for point in explanation_points:
-                    st.markdown(f"- {point}")
+                
+                # Append v1.1 DB reasoning if available
+                ed_reason = getattr(story, 'editorial_reason', None)
+                if ed_reason:
+                    st.info(f"**Editorial Engine:** {ed_reason}")
+                else:
+                    for point in explanation_points:
+                        st.markdown(f"- {point}")
+                
+                conf_summary = getattr(story, 'conflict_summary', None)
+                if conf_summary:
+                    st.warning(f"**⚠️ Source Conflict Detected:** {conf_summary}")
+                    
+                timeline_data = getattr(story, 'timeline_data', None)
+                if timeline_data:
+                    import json
+                    try:
+                        timeline = json.loads(timeline_data)
+                        if timeline:
+                            st.markdown("### ⏱️ Timeline of Events")
+                            for event in timeline:
+                                st.markdown(f"- **{event.get('time', '')}**: {event.get('event', '')}")
+                    except:
+                        pass
+
 
             st.markdown("<br>", unsafe_allow_html=True)
             
