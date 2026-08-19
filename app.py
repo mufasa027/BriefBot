@@ -894,6 +894,8 @@ else:
         badge_class = f"badge-{current_status}" if current_status in ["new", "post_ready", "approved", "rejected"] else "badge-new"
         edge_class = f"story-card-edge-glow-{current_status}" if current_status in ["new", "post_ready", "approved", "rejected"] else "story-card-edge-glow-new"
         
+        breaking_badge = f"<span class='badge badge-rejected' style='background: #DC2626; color: white; margin-right: 12px;'>{story.breaking_status}</span>" if getattr(story, 'breaking_status', 'NORMAL') in ["BREAKING", "DEVELOPING"] else ""
+        
         primary_art = story.articles[0] if story.articles else {}
         summary = primary_art.get('summary', '')
         if len(summary) > 150:
@@ -925,8 +927,7 @@ else:
                 <div style='display:flex; justify-content:space-between; align-items:center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 16px;'>
                     <div style='display:flex; align-items:center; gap: 12px;'>
                         <span class='badge {badge_class}'>{current_status.upper().replace('_', ' ')}</span>
-                        {f"<span class='badge badge-rejected' style='background: #DC2626; color: white;'>{story.breaking_status}</span>" if getattr(story, 'breaking_status', 'NORMAL') in ["BREAKING", "DEVELOPING"] else ""}
-                        <span style='font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; font-weight:600;'>{story.category}</span>
+                        {breaking_badge}<span style='font-size:10px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.1em; font-weight:600;'>{story.category}</span>
                     </div>
                 </div>
             </div>
