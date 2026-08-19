@@ -213,9 +213,10 @@ def insert_or_update_story(story_obj):
                 caption, hashtags, status, generated_time, instagram_media_id, reel_video_path,
                 publish_attempts, queued_time, publishing_time, published_time, publish_error, last_publish_attempt,
                 impact_score, virality_score, freshness_score, credibility_score, audience_relevance_score,
-                editorial_score, editorial_reason, editorial_recommendation, confidence_score, confidence_level, source_agreement
+                editorial_score, editorial_reason, editorial_recommendation, confidence_score, confidence_level, source_agreement,
+                breaking_status, conflict_detected, conflict_summary, timeline_data
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(story_id) DO UPDATE SET
                 story_title=excluded.story_title,
                 category=excluded.category,
