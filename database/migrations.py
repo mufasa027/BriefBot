@@ -92,6 +92,10 @@ def create_database():
                 ("confidence_score", "INTEGER"),
                 ("confidence_level", "TEXT"),
                 ("source_agreement", "TEXT"),
+                ("breaking_status", "TEXT"),
+                ("conflict_detected", "INTEGER"),
+                ("conflict_summary", "TEXT"),
+                ("timeline_data", "TEXT"),
             ]
 
             # Migrate news table

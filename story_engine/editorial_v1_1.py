@@ -86,10 +86,11 @@ def evaluate_story_v1_1(story, force=False):
             Analyze the following news articles from different sources about the same event.
             {context_text}
             
-            Determine if the sources broadly agree on the facts, partially agree (some discrepancies in numbers/details), or have conflicting claims.
+            1. Determine if the sources broadly agree on the facts, partially agree (some discrepancies in numbers/details), or have conflicting claims.
+            2. If there are factual conflicts (e.g., casualty numbers, dates, locations), briefly summarize them.
             
             Return EXACTLY valid JSON:
-            {{"source_agreement": "HIGH" | "PARTIAL" | "CONFLICTING", "conflict_summary": "Describe any conflicts briefly, or None"}}
+            {{"source_agreement": "HIGH" | "PARTIAL" | "CONFLICTING", "conflict_detected": true/false, "conflict_summary": "Brief summary of conflicts, or None"}}
             """
             ag_response = client.chat.completions.create(
                 model="openrouter/auto",
@@ -99,9 +100,14 @@ def evaluate_story_v1_1(story, force=False):
             )
             ag_result = json.loads(ag_response.choices[0].message.content)
             story.source_agreement = ag_result.get("source_agreement", "HIGH")
-            # Phase 2 will utilize conflict_summary properly, but we can store it or just use agreement for now.
+            story.conflict_detected = 1 if ag_result.get("conflict_detected") else 0
+            story.conflict_summary = ag_result.get("conflict_summary", None)
+            if story.conflict_summary and story.conflict_summary.lower() == "none":
+                story.conflict_summary = None
         else:
             story.source_agreement = "N/A (Single Source or Low Priority)"
+            story.conflict_detected = 0
+            story.conflict_summary = None
             
         # Basic confidence calculation (deterministic based on credibility, sources, and agreement)
         base_conf = story.credibility_score
@@ -122,6 +128,53 @@ def evaluate_story_v1_1(story, force=False):
             story.confidence_level = "MEDIUM"
         else:
             story.confidence_level = "LOW"
+            
+        # Detect Breaking/Developing Status deterministically
+        # based on freshness and source count/score
+        if story.freshness_score >= 85 and story.impact_score >= 80 and story.editorial_score >= 70:
+            story.breaking_status = "BREAKING"
+        elif story.freshness_score >= 55 and num_sources >= 2 and story.editorial_score >= 60:
+            story.breaking_status = "DEVELOPING"
+        else:
+            story.breaking_status = "NORMAL"
+            
+        # Generate Timeline Data
+        # Sort articles by published date to build chronological timeline
+        timeline_events = []
+        sorted_articles = sorted(story.articles, key=lambda x: x.get("published", ""))
+        for art in sorted_articles:
+            pub_time = art.get("published")
+            src = art.get("source")
+            if pub_time and src:
+                timeline_events.append({
+                    "time": pub_time,
+                    "source": src,
+                    "event": f"Reported by {src}"
+                })
+        
+        # Optionally, if it's developing/breaking, we can use LLM to summarize events
+        if story.breaking_status in ["BREAKING", "DEVELOPING"] and len(timeline_events) > 1:
+            timeline_prompt = f"""
+            Given the following articles sorted chronologically:
+            {context_text}
+            
+            Extract a 3-5 point chronological timeline of key events.
+            Return EXACTLY valid JSON with a "timeline" array. Each item should have "time" and "event".
+            """
+            tl_response = client.chat.completions.create(
+                model="openrouter/auto",
+                messages=[{"role": "user", "content": timeline_prompt}],
+                response_format={"type": "json_object"},
+                temperature=0.3
+            )
+            tl_result = json.loads(tl_response.choices[0].message.content)
+            if "timeline" in tl_result:
+                timeline_events = tl_result["timeline"]
+                for t in timeline_events:
+                    t["ai_summarized"] = True
+
+        import json as json_lib
+        story.timeline_data = json_lib.dumps(timeline_events)
             
         log_event("V1.1_SCORE_SUCCESS", f"Scored story {story.story_id}: {story.editorial_score}", article_uuid=story.story_id)
 

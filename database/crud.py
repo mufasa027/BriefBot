@@ -251,7 +251,11 @@ def insert_or_update_story(story_obj):
                 editorial_recommendation=COALESCE(excluded.editorial_recommendation, stories.editorial_recommendation),
                 confidence_score=COALESCE(excluded.confidence_score, stories.confidence_score),
                 confidence_level=COALESCE(excluded.confidence_level, stories.confidence_level),
-                source_agreement=COALESCE(excluded.source_agreement, stories.source_agreement)
+                source_agreement=COALESCE(excluded.source_agreement, stories.source_agreement),
+                breaking_status=COALESCE(excluded.breaking_status, stories.breaking_status),
+                conflict_detected=COALESCE(excluded.conflict_detected, stories.conflict_detected),
+                conflict_summary=COALESCE(excluded.conflict_summary, stories.conflict_summary),
+                timeline_data=COALESCE(excluded.timeline_data, stories.timeline_data)
             """,
             (
                 story_id,
@@ -291,6 +295,10 @@ def insert_or_update_story(story_obj):
                 s_dict.get("confidence_score"),
                 s_dict.get("confidence_level"),
                 s_dict.get("source_agreement"),
+                s_dict.get("breaking_status", "NORMAL"),
+                s_dict.get("conflict_detected", 0),
+                s_dict.get("conflict_summary"),
+                s_dict.get("timeline_data"),
             )
         )
         conn.commit()
@@ -360,6 +368,10 @@ def get_all_stories(status_filter=None, limit=50):
             confidence_score=r.get("confidence_score"),
             confidence_level=r.get("confidence_level"),
             source_agreement=r.get("source_agreement"),
+            breaking_status=r.get("breaking_status", "NORMAL"),
+            conflict_detected=r.get("conflict_detected", 0),
+            conflict_summary=r.get("conflict_summary"),
+            timeline_data=r.get("timeline_data"),
         )
         s_obj.rendered_image_path = r.get("rendered_image_path")
         s_obj.caption = r.get("caption")

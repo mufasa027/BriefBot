@@ -34,6 +34,10 @@ class Story:
         confidence_score=None,
         confidence_level=None,
         source_agreement=None,
+        breaking_status="NORMAL",
+        conflict_detected=0,
+        conflict_summary=None,
+        timeline_data=None,
     ):
         self.story_id = story_id or str(uuid.uuid4())
         self.story_title = story_title
@@ -66,6 +70,10 @@ class Story:
         self.confidence_score = confidence_score
         self.confidence_level = confidence_level
         self.source_agreement = source_agreement
+        self.breaking_status = breaking_status
+        self.conflict_detected = conflict_detected
+        self.conflict_summary = conflict_summary
+        self.timeline_data = timeline_data
 
     @property
     def num_sources(self):
@@ -133,6 +141,10 @@ class Story:
             "confidence_score": self.confidence_score,
             "confidence_level": self.confidence_level,
             "source_agreement": self.source_agreement,
+            "breaking_status": self.breaking_status,
+            "conflict_detected": self.conflict_detected,
+            "conflict_summary": self.conflict_summary,
+            "timeline_data": self.timeline_data,
         }
 
     @classmethod
@@ -166,4 +178,8 @@ class Story:
             confidence_score=data.get("confidence_score"),
             confidence_level=data.get("confidence_level"),
             source_agreement=data.get("source_agreement"),
+            breaking_status=data.get("breaking_status", "NORMAL"),
+            conflict_detected=data.get("conflict_detected", 0),
+            conflict_summary=data.get("conflict_summary"),
+            timeline_data=data.get("timeline_data"),
         )
