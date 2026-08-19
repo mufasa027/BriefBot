@@ -647,7 +647,7 @@ else:
         st.markdown("""
         <div class="app-header" style="border-bottom: none; padding-bottom: 0; margin-bottom: 0;">
             <div>
-                <h1 class="app-title">CIPHERBRIEF</h1>
+                <h1 class="app-title">CIPHERBRIEF <span style="font-size: 0.4em; color: var(--text-muted); vertical-align: top;">v1.0</span></h1>
                 <div class="app-subtitle">News Intelligence / Editorial Desk</div>
             </div>
             <div class="system-status">● ALL SYSTEMS OPERATIONAL</div>
@@ -662,7 +662,7 @@ else:
     with st.sidebar:
         st.markdown("""
         <div class="sidebar-brand">CIPHERBRIEF</div>
-        <div class="sidebar-brand-subtitle">NEWS INTELLIGENCE</div>
+        <div class="sidebar-brand-subtitle">NEWS INTELLIGENCE v1.0</div>
         <div class="nav-header">NAVIGATION</div>
         """, unsafe_allow_html=True)
         
