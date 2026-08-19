@@ -58,7 +58,27 @@ class StoryModel(Base):
     num_sources = Column(Integer, default=1)
     first_published = Column(String)
     latest_update = Column(String)
+    
+    # Old V1 Score
     overall_story_score = Column(Integer, default=0)
+    
+    # V1.1 Advanced Scoring
+    impact_score = Column(Integer)
+    virality_score = Column(Integer)
+    freshness_score = Column(Integer)
+    credibility_score = Column(Integer)
+    audience_relevance_score = Column(Integer)
+    editorial_score = Column(Integer)
+    
+    # V1.1 Editorial Context
+    editorial_reason = Column(Text)
+    editorial_recommendation = Column(String)
+    
+    # V1.1 Source Intelligence
+    confidence_score = Column(Integer)
+    confidence_level = Column(String)
+    source_agreement = Column(String)
+
     articles_json = Column(Text)  # JSON serialized list of articles
     entities_json = Column(Text)   # JSON serialized entities
     rendered_image_path = Column(Text)

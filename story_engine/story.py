@@ -22,6 +22,18 @@ class Story:
         overall_story_score=0,
         entities=None,
         status="new",
+        # V1.1 Scoring & Editorial
+        impact_score=None,
+        virality_score=None,
+        freshness_score=None,
+        credibility_score=None,
+        audience_relevance_score=None,
+        editorial_score=None,
+        editorial_reason=None,
+        editorial_recommendation=None,
+        confidence_score=None,
+        confidence_level=None,
+        source_agreement=None,
     ):
         self.story_id = story_id or str(uuid.uuid4())
         self.story_title = story_title
@@ -41,6 +53,19 @@ class Story:
             "keywords": [],
         }
         self.status = status
+        
+        # V1.1 Fields
+        self.impact_score = impact_score
+        self.virality_score = virality_score
+        self.freshness_score = freshness_score
+        self.credibility_score = credibility_score
+        self.audience_relevance_score = audience_relevance_score
+        self.editorial_score = editorial_score
+        self.editorial_reason = editorial_reason
+        self.editorial_recommendation = editorial_recommendation
+        self.confidence_score = confidence_score
+        self.confidence_level = confidence_level
+        self.source_agreement = source_agreement
 
     @property
     def num_sources(self):
@@ -95,6 +120,19 @@ class Story:
             "caption": getattr(self, "caption", None),
             "hashtags": getattr(self, "hashtags", None),
             "generated_time": getattr(self, "generated_time", None),
+            
+            # V1.1
+            "impact_score": self.impact_score,
+            "virality_score": self.virality_score,
+            "freshness_score": self.freshness_score,
+            "credibility_score": self.credibility_score,
+            "audience_relevance_score": self.audience_relevance_score,
+            "editorial_score": self.editorial_score,
+            "editorial_reason": self.editorial_reason,
+            "editorial_recommendation": self.editorial_recommendation,
+            "confidence_score": self.confidence_score,
+            "confidence_level": self.confidence_level,
+            "source_agreement": self.source_agreement,
         }
 
     @classmethod
@@ -114,5 +152,18 @@ class Story:
             latest_update=data.get("latest_update"),
             overall_story_score=data.get("overall_story_score", 0),
             entities=data.get("entities", {}),
-            status=data.get("status", "new")
+            status=data.get("status", "new"),
+            
+            # V1.1
+            impact_score=data.get("impact_score"),
+            virality_score=data.get("virality_score"),
+            freshness_score=data.get("freshness_score"),
+            credibility_score=data.get("credibility_score"),
+            audience_relevance_score=data.get("audience_relevance_score"),
+            editorial_score=data.get("editorial_score"),
+            editorial_reason=data.get("editorial_reason"),
+            editorial_recommendation=data.get("editorial_recommendation"),
+            confidence_score=data.get("confidence_score"),
+            confidence_level=data.get("confidence_level"),
+            source_agreement=data.get("source_agreement"),
         )

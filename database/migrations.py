@@ -80,6 +80,18 @@ def create_database():
                 ("published_time", "TEXT"),
                 ("publish_error", "TEXT"),
                 ("last_publish_attempt", "TEXT"),
+                # V1.1 Columns
+                ("impact_score", "INTEGER"),
+                ("virality_score", "INTEGER"),
+                ("freshness_score", "INTEGER"),
+                ("credibility_score", "INTEGER"),
+                ("audience_relevance_score", "INTEGER"),
+                ("editorial_score", "INTEGER"),
+                ("editorial_reason", "TEXT"),
+                ("editorial_recommendation", "TEXT"),
+                ("confidence_score", "INTEGER"),
+                ("confidence_level", "TEXT"),
+                ("source_agreement", "TEXT"),
             ]
 
             # Migrate news table

@@ -207,33 +207,15 @@ def insert_or_update_story(story_obj):
             """
             INSERT INTO stories
             (
-                story_id,
-                story_title,
-                category,
-                primary_source,
-                primary_article_id,
-                supporting_sources,
-                num_sources,
-                first_published,
-                latest_update,
-                overall_story_score,
-                articles_json,
-                entities_json,
-                rendered_image_path,
-                caption,
-                hashtags,
-                status,
-                generated_time,
-                instagram_media_id,
-                reel_video_path,
-                publish_attempts,
-                queued_time,
-                publishing_time,
-                published_time,
-                publish_error,
-                last_publish_attempt
+                story_id, story_title, category, primary_source, primary_article_id,
+                supporting_sources, num_sources, first_published, latest_update,
+                overall_story_score, articles_json, entities_json, rendered_image_path,
+                caption, hashtags, status, generated_time, instagram_media_id, reel_video_path,
+                publish_attempts, queued_time, publishing_time, published_time, publish_error, last_publish_attempt,
+                impact_score, virality_score, freshness_score, credibility_score, audience_relevance_score,
+                editorial_score, editorial_reason, editorial_recommendation, confidence_score, confidence_level, source_agreement
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(story_id) DO UPDATE SET
                 story_title=excluded.story_title,
                 category=excluded.category,
@@ -258,7 +240,18 @@ def insert_or_update_story(story_obj):
                 publishing_time=excluded.publishing_time,
                 published_time=excluded.published_time,
                 publish_error=excluded.publish_error,
-                last_publish_attempt=excluded.last_publish_attempt
+                last_publish_attempt=excluded.last_publish_attempt,
+                impact_score=COALESCE(excluded.impact_score, stories.impact_score),
+                virality_score=COALESCE(excluded.virality_score, stories.virality_score),
+                freshness_score=COALESCE(excluded.freshness_score, stories.freshness_score),
+                credibility_score=COALESCE(excluded.credibility_score, stories.credibility_score),
+                audience_relevance_score=COALESCE(excluded.audience_relevance_score, stories.audience_relevance_score),
+                editorial_score=COALESCE(excluded.editorial_score, stories.editorial_score),
+                editorial_reason=COALESCE(excluded.editorial_reason, stories.editorial_reason),
+                editorial_recommendation=COALESCE(excluded.editorial_recommendation, stories.editorial_recommendation),
+                confidence_score=COALESCE(excluded.confidence_score, stories.confidence_score),
+                confidence_level=COALESCE(excluded.confidence_level, stories.confidence_level),
+                source_agreement=COALESCE(excluded.source_agreement, stories.source_agreement)
             """,
             (
                 story_id,
@@ -286,6 +279,18 @@ def insert_or_update_story(story_obj):
                 s_dict.get("published_time"),
                 s_dict.get("publish_error"),
                 s_dict.get("last_publish_attempt"),
+                # V1.1 parameters
+                s_dict.get("impact_score"),
+                s_dict.get("virality_score"),
+                s_dict.get("freshness_score"),
+                s_dict.get("credibility_score"),
+                s_dict.get("audience_relevance_score"),
+                s_dict.get("editorial_score"),
+                s_dict.get("editorial_reason"),
+                s_dict.get("editorial_recommendation"),
+                s_dict.get("confidence_score"),
+                s_dict.get("confidence_level"),
+                s_dict.get("source_agreement"),
             )
         )
         conn.commit()
@@ -335,20 +340,32 @@ def get_all_stories(status_filter=None, limit=50):
             story_title=r["story_title"],
             category=r["category"],
             primary_source=r["primary_source"],
-            primary_article_id=r["primary_article_id"],
+            primary_article_id=r.get("primary_article_id"),
             articles=articles,
             supporting_sources=supporting,
-            first_published=r["first_published"],
-            latest_update=r["latest_update"],
-            overall_story_score=r["overall_story_score"],
+            first_published=r.get("first_published"),
+            latest_update=r.get("latest_update"),
+            overall_story_score=r.get("overall_story_score", 0),
             entities=entities,
-            status=r["status"],
-
+            status=r.get("status", "new"),
+            # V1.1 parameters
+            impact_score=r.get("impact_score"),
+            virality_score=r.get("virality_score"),
+            freshness_score=r.get("freshness_score"),
+            credibility_score=r.get("credibility_score"),
+            audience_relevance_score=r.get("audience_relevance_score"),
+            editorial_score=r.get("editorial_score"),
+            editorial_reason=r.get("editorial_reason"),
+            editorial_recommendation=r.get("editorial_recommendation"),
+            confidence_score=r.get("confidence_score"),
+            confidence_level=r.get("confidence_level"),
+            source_agreement=r.get("source_agreement"),
         )
         s_obj.rendered_image_path = r.get("rendered_image_path")
         s_obj.caption = r.get("caption")
         s_obj.hashtags = r.get("hashtags")
         s_obj.generated_time = r.get("generated_time")
+
         stories.append(s_obj)
 
     return stories
