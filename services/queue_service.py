@@ -59,7 +59,7 @@ def transition_article_status(article, new_status):
     return new_status
 
 
-def handle_generate_story_action(story_obj, force=False, headline_style="NEUTRAL", caption_style="NEWSROOM", template_style="STANDARD"):
+def handle_generate_story_action(story_obj, force=False, headline_style="NEUTRAL", caption_style="NEWSROOM", template_style="STANDARD", duration=10, motion="NONE"):
     """
     Transactional & Atomic Story Post Generation:
     1. Pre-render Duplicate Check: Skips generation if story is already rendered (unless force=True).

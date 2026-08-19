@@ -1029,6 +1029,12 @@ else:
             with col_s3:
                 selected_cs = st.selectbox("Caption Style", ["NEWSROOM", "SOCIAL-FIRST", "ANALYTICAL", "EXPLAINER", "MINIMAL"], key=f"cs_{story_id}")
                 
+            col_r1, col_r2 = st.columns(2)
+            with col_r1:
+                selected_dur = st.selectbox("Reel Duration", [5, 10, 15], index=1, key=f"dur_{story_id}", format_func=lambda x: f"{x} Seconds")
+            with col_r2:
+                selected_mot = st.selectbox("Reel Motion", ["NONE", "ZOOM_IN"], key=f"mot_{story_id}", help="Adds a subtle Ken Burns zoom effect to the video")
+                
             st.markdown("<hr style='border-color: #242933; margin: 32px 0;'>", unsafe_allow_html=True)
             
             st.markdown("<div class='section-header'>WORKFLOW ACTIONS</div>", unsafe_allow_html=True)
@@ -1054,7 +1060,7 @@ else:
                         if st.button(btn_label, type="primary", key=f"synth_btn_{story_id}", use_container_width=True):
                             st.toast("Rendering Post... 🔄", icon="⏳")
                             from services.queue_service import handle_generate_story_action, transition_article_status
-                            updated_s, err = handle_generate_story_action(story, force=True, headline_style=selected_hs, caption_style=selected_cs, template_style=selected_ts)
+                            updated_s, err = handle_generate_story_action(story, force=True, headline_style=selected_hs, caption_style=selected_cs, template_style=selected_ts, duration=selected_dur, motion=selected_mot)
                             if err:
                                 st.toast(f"Generation Error: {err}", icon="❌")
                             else:

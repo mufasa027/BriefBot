@@ -4,25 +4,27 @@ from settings import BASE_DIR
 from services.logging_service import log_event
 from services.audio_manager import get_next_audio_track
 
-REEL_DURATION_SECONDS = 10
-
-def generate_static_reel(png_path, article_uuid):
+def generate_static_reel(png_path, article_uuid, duration=10, motion="NONE"):
     """
-    Converts a static 1080x1920 PNG into a static MP4 video using FFmpeg.
-    Ensures optimal encoding for social media.
-    Returns the path to the generated MP4 file or None if it fails.
+    Converts a static 1080x1920 PNG into an MP4 video using FFmpeg.
+    Supports dynamic durations and subtle Ken Burns zoom.
     """
     if not png_path or not os.path.exists(png_path):
         log_event("VIDEO_GEN_FAILED", f"Source PNG missing: {png_path}", article_uuid=article_uuid, level="ERROR")
         return None
 
-    # Derive output MP4 path from the PNG path
     mp4_path = png_path.replace(".png", ".mp4")
-    # Get audio track
     audio_path = get_next_audio_track(article_uuid)
     
+    # Configure video filter based on motion
+    if motion == "ZOOM_IN":
+        # Subtle zoom from 1.0 to 1.1x over the duration
+        # fps=25 is assumed by zoompan 'd' parameter
+        vf_filter = f"zoompan=z='min(zoom+0.0015,1.1)':d={duration*25}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920"
+    else:
+        vf_filter = "scale=1080:1920"
+    
     if audio_path:
-        # FFmpeg command with audio
         cmd = [
             "ffmpeg",
             "-y",
@@ -33,27 +35,26 @@ def generate_static_reel(png_path, article_uuid):
             "-c:a", "aac",
             "-b:a", "192k",
             "-pix_fmt", "yuv420p",
-            "-vf", "scale=1080:1920",
-            "-t", str(REEL_DURATION_SECONDS),
-            "-shortest",  # Fallback just in case audio is less than 10s
+            "-vf", vf_filter,
+            "-t", str(duration),
+            "-shortest",
             mp4_path
         ]
     else:
-        # FFmpeg command without audio (silent)
         cmd = [
             "ffmpeg",
             "-y",
             "-loop", "1",
             "-i", png_path,
             "-c:v", "libx264",
-            "-t", str(REEL_DURATION_SECONDS),
+            "-t", str(duration),
             "-pix_fmt", "yuv420p",
-            "-vf", "scale=1080:1920",
+            "-vf", vf_filter,
             mp4_path
         ]
 
     try:
-        log_event("VIDEO_GEN_START", f"Starting FFmpeg MP4 generation for {REEL_DURATION_SECONDS}s", article_uuid=article_uuid)
+        log_event("VIDEO_GEN_START", f"Starting FFmpeg MP4 generation for {duration}s, motion: {motion}", article_uuid=article_uuid)
         result = subprocess.run(
             cmd,
             stdout=subprocess.PIPE,
