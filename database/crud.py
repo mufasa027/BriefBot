@@ -382,3 +382,47 @@ def get_all_stories(status_filter=None, limit=50):
         stories.append(s_obj)
 
     return stories
+def get_story_by_id(story_id):
+    from database.connection import get_connection
+    from database.models import Story
+    import json
+    
+    conn = get_connection()
+    try:
+        cursor = conn.cursor()
+        cursor.execute("SELECT * FROM stories WHERE story_id = ?", (story_id,))
+        row = cursor.fetchone()
+        if not row:
+            return None
+        
+        col_names = [description[0] for description in cursor.description]
+        row_dict = dict(zip(col_names, row))
+        
+        story = Story(
+            story_id=row_dict.get("story_id"),
+            story_title=row_dict.get("story_title"),
+            category=row_dict.get("category"),
+            primary_source=row_dict.get("primary_source"),
+            primary_article_id=row_dict.get("primary_article_id"),
+            supporting_sources=row_dict.get("supporting_sources", "").split(", ") if row_dict.get("supporting_sources") else [],
+            num_sources=row_dict.get("num_sources"),
+            first_published=row_dict.get("first_published"),
+            latest_update=row_dict.get("latest_update"),
+            overall_story_score=row_dict.get("overall_story_score"),
+            editorial_score=row_dict.get("editorial_score"),
+            breaking_status=row_dict.get("breaking_status", "NORMAL"),
+            conflict_detected=bool(row_dict.get("conflict_detected")),
+            conflict_summary=row_dict.get("conflict_summary"),
+            timeline_data=row_dict.get("timeline_data"),
+            status=row_dict.get("status"),
+            rendered_image_path=row_dict.get("rendered_image_path")
+        )
+        try:
+            if row_dict.get("articles_json"):
+                story.articles = json.loads(row_dict["articles_json"])
+        except Exception:
+            pass
+            
+        return story
+    finally:
+        conn.close()
