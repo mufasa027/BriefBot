@@ -384,7 +384,7 @@ def get_all_stories(status_filter=None, limit=50):
     return stories
 def get_story_by_id(story_id):
     from database.connection import get_connection
-    from database.models import Story
+    from story_engine.story import Story
     import json
     
     conn = get_connection()

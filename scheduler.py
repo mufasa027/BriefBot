@@ -1,7 +1,7 @@
 import os
 import time
 import schedule
-from main import run_ingestion_cycle
+from main import main as run_ingestion_cycle
 from services.logging_service import log_event
 
 def job():

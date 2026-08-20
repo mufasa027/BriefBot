@@ -739,15 +739,8 @@ else:
             else:
                 with st.status("Fetching and clustering news...", expanded=True) as status:
                     try:
-                        import main, sys
-                        from io import StringIO
-                        original_stdout = sys.stdout
-                        sys.stdout = StringIO()
-                        try:
-                            main.main()
-                        finally:
-                            output = sys.stdout.getvalue()
-                            sys.stdout = original_stdout
+                        from main import main as run_ingestion_cycle
+                        run_ingestion_cycle()
                         status.update(label="News fetched successfully!", state="complete", expanded=False)
                     except Exception as e:
                         status.update(label=f"Error: {e}", state="error", expanded=True)
