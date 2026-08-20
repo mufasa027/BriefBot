@@ -57,8 +57,7 @@ def main():
 
     saved = save_articles(articles)
     
-    print("
-Clustering stories...")
+    print("\nClustering stories...")
     from database.crud import get_articles_sorted_by_score, save_stories, get_story_by_id
     from story_engine.cluster import cluster_articles_into_stories
     from story_engine.editorial_v1_1 import evaluate_story_v1_1
@@ -67,8 +66,7 @@ Clustering stories...")
     if raw_arts:
         clustered = cluster_articles_into_stories(raw_arts, similarity_threshold=0.45)
         
-        print("
-Evaluating V1.1 Editorial Scores...")
+        print("\nEvaluating V1.1 Editorial Scores...")
         for i, story in enumerate(clustered, start=1):
             existing = get_story_by_id(story.story_id)
             if existing and existing.editorial_score is not None:

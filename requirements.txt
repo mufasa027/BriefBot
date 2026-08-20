@@ -11,3 +11,4 @@ streamlit==1.60.0
 pandas==3.0.5
 pytest==8.3.3
 black==24.4.2
+schedule
