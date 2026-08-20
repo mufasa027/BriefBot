@@ -15,7 +15,11 @@ from services import logging_service
 from services.queue_service import handle_generate_story_action, transition_article_status
 
 # Initialize database to prevent "no such table" errors on first run
-create_database()
+@st.cache_resource
+def init_db():
+    create_database()
+
+init_db()
 
 st.set_page_config(
     page_title="CipherBrief Newsroom",

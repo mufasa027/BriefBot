@@ -12,6 +12,7 @@ engine = create_engine(
     DATABASE_URL,
     echo=False,
     future=True,
+    connect_args={'timeout': 15}
 )
 
 SessionLocal = sessionmaker(

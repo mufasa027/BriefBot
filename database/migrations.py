@@ -144,4 +144,7 @@ def create_database():
         print("==================================================")
         # On Streamlit Cloud, printing to stdout is helpful, but we also raise so Streamlit halts
         # and displays the exact trace to the developer.
-        raise RuntimeError(f"Database Initialization Failed: {e}") from e
+        if "database is locked" in str(e).lower():
+            print("[WARN] Database is locked by another process during initialization. Assuming schema is already migrated.")
+        else:
+            raise RuntimeError(f"Database Initialization Failed: {e}") from e
