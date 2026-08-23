@@ -934,15 +934,11 @@ else:
                 col_dummy, col_btn = st.columns([5,2])
                 with col_btn:
                     if st.button("Review", key=f"btn_review_{story.story_id}", use_container_width=True):
-                        st.session_state.selected_story_id = story.story_id
-                        st.rerun()
+                        render_story_detail(story)
 
+    @st.dialog("Story Detail Workspace", width="large")
     def render_story_detail(story):
         """Renders the professional detail/workspace view for a single story."""
-        if st.button("← Back to List"):
-            st.session_state.selected_story_id = None
-            st.rerun()
-            
         st.markdown("<br>", unsafe_allow_html=True)
         
         s_dict = story.to_dict()
@@ -1171,17 +1167,8 @@ else:
     # 8. PAGE ROUTING & RENDERING
     # ==========================================
 
-    # If a specific story is selected, show detail view (overrides page routing)
-    if st.session_state.selected_story_id:
-        # Find story
-        selected_story = next((s for s in stories if s.story_id == st.session_state.selected_story_id), None)
-        if selected_story:
-            render_story_detail(selected_story)
-        else:
-            st.error("Story not found.")
-            st.button("Back", on_click=lambda: st.session_state.update(selected_story_id=None))
-
-    else:
+    # Modal handles details now, just render active page
+    if True:
         if st.session_state.active_page == "Overview":
             components.html("""
     <style>
