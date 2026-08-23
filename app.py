@@ -46,20 +46,20 @@ st.markdown("""
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
     :root {
-        --bg-main: #07090D;
-        --bg-surface: rgba(10, 13, 18, 0.82);
-        --bg-secondary: rgba(10, 13, 18, 0.6);
-        --border-color: rgba(255, 255, 255, 0.07);
-        --text-primary: #F5F7FA;
-        --text-secondary: #9299A5;
-        --text-muted: #666D78;
+        --bg-main: #1C1917; /* Very dark espresso */
+        --bg-surface: rgba(41, 37, 36, 0.85); /* Dark mocha */
+        --bg-secondary: rgba(41, 37, 36, 0.6);
+        --border-color: rgba(212, 163, 115, 0.15); /* Warm tinted border */
+        --text-primary: #EAE0D5; /* Warm off-white */
+        --text-secondary: #C4B6A6;
+        --text-muted: #9E8F7F;
         
-        --accent-blue: #4DA3FF;
-        --accent-blue-glow: rgba(77, 163, 255, 0.15);
-        --accent-success: #3DDC97;
-        --accent-success-glow: rgba(61, 220, 151, 0.15);
-        --accent-danger: #FF5C5C;
-        --accent-danger-glow: rgba(255, 92, 92, 0.15);
+        --accent-blue: #D4A373; /* Gold/Amber replacing blue */
+        --accent-blue-glow: rgba(212, 163, 115, 0.15);
+        --accent-success: #8A9A5B; /* Sage green */
+        --accent-success-glow: rgba(138, 154, 91, 0.15);
+        --accent-danger: #D95D39; /* Terracotta red */
+        --accent-danger-glow: rgba(217, 93, 57, 0.15);
     }
 
     html, body, [class*="css"] {
@@ -69,7 +69,7 @@ st.markdown("""
 
     [data-testid="stAppViewContainer"] {
         background-color: var(--bg-main) !important;
-        background-image: url("data:image/svg+xml;base64,BACKGROUND_BASE64_PLACEHOLDER") !important;
+        /* background-image removed for solid Evening Digest theme */
         background-size: cover !important;
         background-attachment: fixed !important;
         background-position: center !important;
