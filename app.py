@@ -43,27 +43,27 @@ except:
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap');
 
     :root {
-        --bg-main: #1C1917; /* Very dark espresso */
-        --bg-surface: rgba(41, 37, 36, 0.85); /* Dark mocha */
-        --bg-secondary: rgba(41, 37, 36, 0.6);
-        --border-color: rgba(212, 163, 115, 0.15); /* Warm tinted border */
-        --text-primary: #EAE0D5; /* Warm off-white */
-        --text-secondary: #C4B6A6;
-        --text-muted: #9E8F7F;
+        --bg-main: #F4F1E1; /* Old newsprint cream */
+        --bg-surface: rgba(234, 229, 217, 0.85); /* Slightly darker cream for cards */
+        --bg-secondary: rgba(234, 229, 217, 0.6);
+        --border-color: rgba(0, 0, 0, 0.15); /* Ink borders */
+        --text-primary: #1C1C1C; /* Ink black */
+        --text-secondary: #4A4A4A; /* Faded ink */
+        --text-muted: #757575;
         
-        --accent-blue: #D4A373; /* Gold/Amber replacing blue */
-        --accent-blue-glow: rgba(212, 163, 115, 0.15);
-        --accent-success: #8A9A5B; /* Sage green */
-        --accent-success-glow: rgba(138, 154, 91, 0.15);
-        --accent-danger: #D95D39; /* Terracotta red */
-        --accent-danger-glow: rgba(217, 93, 57, 0.15);
+        --accent-blue: #2C3E50; /* Classic ink blue */
+        --accent-blue-glow: rgba(44, 62, 80, 0.1);
+        --accent-success: #2E7D32; /* Classic dark green */
+        --accent-success-glow: rgba(46, 125, 50, 0.1);
+        --accent-danger: #8B0000; /* Editorial red */
+        --accent-danger-glow: rgba(139, 0, 0, 0.1);
     }
 
     html, body, [class*="css"] {
-        font-family: 'Inter', sans-serif !important;
+        font-family: 'Georgia', 'Times New Roman', serif !important;
         color: var(--text-primary) !important;
     }
 
@@ -1177,7 +1177,7 @@ else:
             justify-content: space-between; 
             align-items: flex-end; 
             margin-bottom: 32px; 
-            font-family: 'Inter', sans-serif;
+            font-family: 'Lora', 'Georgia', serif;
         }
         @media (max-width: 768px) {
             #ist-clock-container {
