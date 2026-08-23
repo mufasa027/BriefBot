@@ -43,29 +43,35 @@ except:
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
 
     :root {
-        --bg-main: #F4F1E1; /* Old newsprint cream */
-        --bg-surface: rgba(234, 229, 217, 0.85); /* Slightly darker cream for cards */
-        --bg-secondary: rgba(234, 229, 217, 0.6);
-        --border-color: rgba(0, 0, 0, 0.15); /* Ink borders */
-        --text-primary: #1C1C1C; /* Ink black */
-        --text-secondary: #4A4A4A; /* Faded ink */
-        --text-muted: #757575;
+        --bg-main: #070707; /* Deep Obsidian / Pitch */
+        --bg-surface: rgba(23, 23, 23, 0.85); /* Forge Gray */
+        --bg-secondary: rgba(23, 23, 23, 0.6);
+        --border-color: rgba(184, 134, 11, 0.25); /* Tarnished Gold tint */
+        --text-primary: #E5E5E5; /* Silver */
+        --text-secondary: #A3A3A3; /* Forged Iron */
+        --text-muted: #737373;
         
-        --accent-blue: #2C3E50; /* Classic ink blue */
-        --accent-blue-glow: rgba(44, 62, 80, 0.1);
-        --accent-success: #2E7D32; /* Classic dark green */
-        --accent-success-glow: rgba(46, 125, 50, 0.1);
-        --accent-danger: #8B0000; /* Editorial red */
-        --accent-danger-glow: rgba(139, 0, 0, 0.1);
+        --accent-blue: #B8860B; /* Tarnished Gold */
+        --accent-blue-glow: rgba(184, 134, 11, 0.15);
+        --accent-success: #4A5D23; /* Dark Forest / Olive */
+        --accent-success-glow: rgba(74, 93, 35, 0.15);
+        --accent-danger: #8B0000; /* Deep Blood Red */
+        --accent-danger-glow: rgba(139, 0, 0, 0.2);
     }
 
     html, body, [class*="css"] {
-        font-family: 'Georgia', 'Times New Roman', serif !important;
+        font-family: 'Lora', 'Georgia', serif !important;
         color: var(--text-primary) !important;
     }
+
+    .story-headline, .section-header, .section-title, .sidebar-brand {
+        font-family: 'Cinzel', serif !important;
+        letter-spacing: 0.05em;
+    }
+
 
     [data-testid="stAppViewContainer"] {
         background-color: var(--bg-main) !important;
