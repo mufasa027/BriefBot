@@ -1060,7 +1060,7 @@ else:
                         st.toast("Edits saved! Use Reset Render -> Render to apply.", icon="✅")
                         time.sleep(1)
                         st.cache_data.clear()
-                        st.rerun()
+                        # st.rerun()
                 st.markdown("<br>", unsafe_allow_html=True)
             
             st.markdown("<div class='section-header'>CAPTION</div>", unsafe_allow_html=True)
@@ -1109,7 +1109,7 @@ else:
                             st.toast("Render reset successfully!", icon="✅")
                             time.sleep(1)
                             st.cache_data.clear()
-                            st.rerun()
+                            # st.rerun()
                 else:
                     btn_label = "Render"
                     if not is_admin_authenticated():
@@ -1126,7 +1126,7 @@ else:
                                 st.toast("Post Rendered Successfully! ✅", icon="✨")
                                 time.sleep(1.5)
                                 st.cache_data.clear()
-                                st.rerun()
+                                # st.rerun()
                             
             with col_a2:
                 if not is_admin_authenticated():
@@ -1138,7 +1138,7 @@ else:
                         st.toast("Post Approved and Ready! 🚀", icon="✅")
                         time.sleep(1)
                         st.cache_data.clear()
-                        st.rerun()
+                        # st.rerun()
                     
             with col_a3:
                 if not is_admin_authenticated():
@@ -1150,8 +1150,8 @@ else:
                         st.toast("Story Rejected.", icon="🗑️")
                         time.sleep(1)
                         st.cache_data.clear()
-                        st.session_state.selected_story_id = None
-                        st.rerun()
+                        # st.session_state.selected_story_id = None
+                        # st.rerun()
                     
             with col_a4:
                 if has_render:
@@ -1321,11 +1321,11 @@ else:
                         with btn_cols[p-1]:
                             if st.button(str(p), key=f"pag_btn_{p}_{page_key}", type="tertiary", disabled=(p == page)):
                                 st.session_state[page_key] = p
-                                st.rerun()
+                                # st.rerun()
                     if page < pages:
                         with btn_cols[pages]:
                             if st.button("Next", key=f"pag_btn_next_{page_key}", type="tertiary"):
                                 st.session_state[page_key] = page + 1
-                                st.rerun()
+                                # st.rerun()
 
 
