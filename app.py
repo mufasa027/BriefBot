@@ -43,34 +43,31 @@ except:
 
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
-
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+    
     :root {
-        --bg-main: #070707; /* Deep Obsidian / Pitch */
-        --bg-surface: rgba(23, 23, 23, 0.85); /* Forge Gray */
-        --bg-secondary: rgba(23, 23, 23, 0.6);
-        --border-color: rgba(184, 134, 11, 0.25); /* Tarnished Gold tint */
-        --text-primary: #E5E5E5; /* Silver */
-        --text-secondary: #A3A3A3; /* Forged Iron */
-        --text-muted: #737373;
+        --bg-main: #0B0F19; /* Deep Slate Blue */
+        --bg-surface: rgba(17, 24, 39, 0.75); /* Frosty dark slate */
+        --bg-secondary: rgba(17, 24, 39, 0.95);
+        --border-color: rgba(0, 229, 255, 0.15); /* Faint Cyan borders */
+        --text-primary: #F3F4F6;
+        --text-secondary: #9CA3AF;
+        --text-muted: #6B7280;
         
-        --accent-blue: #B8860B; /* Tarnished Gold */
-        --accent-blue-glow: rgba(184, 134, 11, 0.15);
-        --accent-success: #4A5D23; /* Dark Forest / Olive */
-        --accent-success-glow: rgba(74, 93, 35, 0.15);
-        --accent-danger: #8B0000; /* Deep Blood Red */
-        --accent-danger-glow: rgba(139, 0, 0, 0.2);
+        --accent-blue: #00E5FF; /* Cyan/Teal */
+        --accent-blue-glow: rgba(0, 229, 255, 0.2);
+        --accent-success: #10B981; /* Tactical Green */
+        --accent-success-glow: rgba(16, 185, 129, 0.2);
+        --accent-danger: #FFAB00; /* Tactical Amber/Orange */
+        --accent-danger-glow: rgba(255, 171, 0, 0.2);
     }
 
     html, body, [class*="css"] {
-        font-family: 'Lora', 'Georgia', serif !important;
+        font-family: 'Inter', sans-serif !important;
         color: var(--text-primary) !important;
     }
 
-    .story-headline, .section-header, .section-title, .sidebar-brand {
-        font-family: 'Cinzel', serif !important;
-        letter-spacing: 0.05em;
-    }
+
 
 
     [data-testid="stAppViewContainer"] {
@@ -166,6 +163,7 @@ st.markdown("""
         font-weight: 700;
         font-size: 32px !important;
         letter-spacing: -0.02em;
+        font-family: monospace !important;
     }
 
     div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"] {
@@ -476,6 +474,7 @@ if st.session_state.role_selected is None:
     # --- LANDING PAGE ---
     st.markdown("""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     .landing-container {
         display: flex;
         flex-direction: column;
@@ -593,6 +592,7 @@ elif st.session_state.role_selected == "admin_login":
     # --- ADMIN LOGIN PAGE ---
     st.markdown("""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
     .login-container {
         max-width: 400px;
         margin: 100px auto;
@@ -1178,6 +1178,7 @@ else:
         if st.session_state.active_page == "Overview":
             components.html("""
     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         #ist-clock-container {
             display: flex; 
             justify-content: space-between; 
@@ -1297,6 +1298,7 @@ else:
                     
                     st.markdown("""
                     <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
                     div[data-testid="stHorizontalBlock"]:has(button[kind="tertiary"]) {
                         justify-content: center !important;
                         gap: 4px !important;
