@@ -405,7 +405,6 @@ def get_story_by_id(story_id):
             primary_source=row_dict.get("primary_source"),
             primary_article_id=row_dict.get("primary_article_id"),
             supporting_sources=row_dict.get("supporting_sources", "").split(", ") if row_dict.get("supporting_sources") else [],
-            num_sources=row_dict.get("num_sources"),
             first_published=row_dict.get("first_published"),
             latest_update=row_dict.get("latest_update"),
             overall_story_score=row_dict.get("overall_story_score"),
@@ -414,9 +413,10 @@ def get_story_by_id(story_id):
             conflict_detected=bool(row_dict.get("conflict_detected")),
             conflict_summary=row_dict.get("conflict_summary"),
             timeline_data=row_dict.get("timeline_data"),
-            status=row_dict.get("status"),
-            rendered_image_path=row_dict.get("rendered_image_path")
+            status=row_dict.get("status")
         )
+        if row_dict.get("rendered_image_path"):
+            story.rendered_image_path = row_dict.get("rendered_image_path")
         try:
             if row_dict.get("articles_json"):
                 story.articles = json.loads(row_dict["articles_json"])
