@@ -788,13 +788,52 @@ else:
             col2.metric("Posts Rendered (Today)", total_renders_today)
             col3.metric("Total Stories (All Time)", total_stories_ever)
             
-            st.markdown("### Top 5 Highest Scoring Stories Today")
-            if top_stories:
-                for idx, row in enumerate(top_stories):
-                    title, score, src_count = row
-                    st.info(f"**#{idx+1} ({score}/100)** - {title} _({src_count} sources)_")
+            st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 30px 0;'>", unsafe_allow_html=True)
+            
+            # Fetch data for charts
+            import pandas as pd
+            import plotly.express as px
+            
+            conn = get_connection()
+            query = "SELECT category, editorial_score, num_sources, primary_source, created_at FROM stories WHERE status != 'rejected'"
+            df = pd.read_sql_query(query, conn)
+            conn.close()
+            
+            if not df.empty:
+                df['created_at'] = pd.to_datetime(df['created_at'])
+                df['date'] = df['created_at'].dt.date
+                
+                c1, c2 = st.columns(2)
+                
+                with c1:
+                    st.markdown("### Volume by Category")
+                    cat_counts = df['category'].value_counts().reset_index()
+                    cat_counts.columns = ['Category', 'Count']
+                    fig1 = px.pie(cat_counts, values='Count', names='Category', hole=0.4, 
+                                  color_discrete_sequence=px.colors.sequential.Teal)
+                    fig1.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F3F4F6"), margin=dict(t=30, b=0, l=0, r=0))
+                    st.plotly_chart(fig1, use_container_width=True)
+                    
+                with c2:
+                    st.markdown("### Avg Editorial Score by Source")
+                    src_scores = df.groupby('primary_source')['editorial_score'].mean().reset_index().sort_values('editorial_score', ascending=False).head(10)
+                    fig2 = px.bar(src_scores, x='editorial_score', y='primary_source', orientation='h',
+                                  color='editorial_score', color_continuous_scale="Teal")
+                    fig2.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F3F4F6"), yaxis={'categoryorder':'total ascending'}, margin=dict(t=30, b=0, l=0, r=0))
+                    st.plotly_chart(fig2, use_container_width=True)
+                
+                st.markdown("<hr style='border-color: rgba(255,255,255,0.1); margin: 30px 0;'>", unsafe_allow_html=True)
+                
+                st.markdown("### Daily Ingestion Volume (Last 7 Days)")
+                recent_df = df[df['date'] >= (pd.Timestamp.now().date() - pd.Timedelta(days=7))]
+                daily_vol = recent_df.groupby('date').size().reset_index(name='Stories Count')
+                fig3 = px.line(daily_vol, x='date', y='Stories Count', markers=True, color_discrete_sequence=['#00E5FF'])
+                fig3.update_layout(plot_bgcolor="rgba(0,0,0,0)", paper_bgcolor="rgba(0,0,0,0)", font=dict(color="#F3F4F6"), xaxis_title="", yaxis_title="Stories Ingested")
+                st.plotly_chart(fig3, use_container_width=True)
+                
             else:
-                st.write("No stories found for today yet.")
+                st.info("Not enough data to generate charts yet.")
+                
             st.stop()
 
         if admin_view == "User Feedback":
