@@ -3,6 +3,7 @@ import subprocess
 from settings import BASE_DIR
 from services.logging_service import log_event
 from services.audio_manager import get_next_audio_track
+import imageio_ffmpeg
 
 def generate_static_reel(png_path, article_uuid, duration=10, motion="NONE"):
     """
@@ -24,9 +25,11 @@ def generate_static_reel(png_path, article_uuid, duration=10, motion="NONE"):
     else:
         vf_filter = "scale=1080:1920"
     
+    ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+    
     if audio_path:
         cmd = [
-            "ffmpeg",
+            ffmpeg_exe,
             "-y",
             "-loop", "1",
             "-i", png_path,
@@ -42,7 +45,7 @@ def generate_static_reel(png_path, article_uuid, duration=10, motion="NONE"):
         ]
     else:
         cmd = [
-            "ffmpeg",
+            ffmpeg_exe,
             "-y",
             "-loop", "1",
             "-i", png_path,
