@@ -1,5 +1,5 @@
 opencv-python==4.10.0.84
-numpy==2.5.1
+numpy==2.4.6
 pillow>=12.0.0
 feedparser==6.0.13
 SQLAlchemy==2.0.51
